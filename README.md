@@ -6,7 +6,7 @@ Temporary shared folders.
 
 Alice, Bob, and Carol spent the week-end together.
 
-1. Alice creates a new *Besace* folder, and gets a link https://sakapatat.example.org/folder/CC79D5/
+1. Alice creates a new *Besace* folder, and gets a link https://mybesace.com/ABF9DA1B-F65F-4AC4-A87E-6E3C2BD36AC3/
 2. Alice shares the link with her friends on a group chat
 3. The page shows an extremely simple interface: two big buttons, *Upload* and *Download*
 4. Alice starts uploading her files
@@ -81,7 +81,7 @@ sequenceDiagram
 2. User picks her file(s)
 3. Web page shows progress bar(s)
 
-Under the hood, the JavaScript client uploads files to *tusd*, passing the folder id as custom header (eg. `X-Besace-Folder-Id={uuid]`).
+Under the hood, the JavaScript client uploads files to *tusd*, passing the folder id as custom header (eg. `X-Besace-Folder-Id={uuid}`).
 
 > Note: *tusd* would be proxied and not accessed directly by clients
 
