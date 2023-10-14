@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="./vendored/uppy-v3.17.0.min.css" rel="stylesheet">
+    <title>Besace</title>
+  </head>
+
+  <body>
+    <div id="uppy"></div>
+    <script type="module">
+      import {
+        DragDrop,
+        Dashboard,
+        GoldenRetriever,
+        ImageEditor,
+        StatusBar,
+        Tus,
+        Uppy,
+       } from "./vendored/uppy-v3.17.0.min.mjs";
+      const folderId = window.location.href.split('#')[1];
+      const uppy = new Uppy({
+        onBeforeUpload: (files) => {
+          // Set folder id on uploaded files.
+          Object.values(files).forEach(file => {
+            file.meta.folderId = folderId;
+          });
+          return true;
+        }
+      });
+      uppy
+        .use(Dashboard, { inline: true, target: '#uppy' })
+        .use(ImageEditor, { target: Dashboard })
+        .use(Tus, {
+          endpoint: '/tusd',
+        });
+    </script>
+  </body>
+</html>

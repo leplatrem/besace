@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  tusd:
+    image: tusproject/tusd:v2
+    environment:
+      - BESACE_ROOT_FOLDER=/mnt/data
+    volumes:
+      - ./hooks:/srv/tusd-hooks:ro
+      - tusd-data:/srv/tusd-data:rw
+    # - root-folder:/mnt/data:rw
+    command: -hooks-dir /srv/tusd-hooks -base-path /tusd/ -upload-dir /srv/tusd-data -behind-proxy
+    expose:
+      - "8080"
+
+  api:
+    build:
+      context: ./api/
+    image: api
+    # Let the init system handle signals for us.
+    # among other things this helps shutdown be fast
+    init: true
+    environment:
+      - ROOT_URL_PATH=/api
+      - BESACE_ROOT_FOLDER=/tmp/data
+    volumes:
+      - ./api:/app:rw
+      - root-folder:/tmp/data:rw
+    expose:
+      - "8000"
+
+  web:
+    image: nginx:latest
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./html:/var/www:ro
+    ports:
+      - 80:80
+
+volumes:
+  tusd-data:
+  root-folder:
+  hooks:

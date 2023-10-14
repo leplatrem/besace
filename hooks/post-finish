@@ -1,0 +1,12 @@
+#!/bin/sh
+eventPayload=$(cat /dev/stdin | jq .)
+folder_id=$(echo $eventPayload | jq -r .Event.Upload.MetaData.folderId)
+source=$(echo $eventPayload | jq -r .Event.Upload.Storage.Path)
+filename=$(echo $eventPayload | jq -r  .Event.Upload.MetaData.filename)
+destination="${BESACE_ROOT_FOLDER}/${folder_id}/${filename}"
+echo "source=${source}" >&2
+echo "destination=${destination}" >&2
+
+echo "Moving uploaded file ${source} to ${destination}" >&2
+mv "${source}" "${destination}"
+echo "{\"success\":  true, \"filename\": \"${filename}\"}"

@@ -81,7 +81,7 @@ sequenceDiagram
 2. User picks her file(s)
 3. Web page shows progress bar(s)
 
-Under the hood, the JavaScript client uploads files to *tusd*, passing the folder id as custom header (eg. `X-Besace-Folder-Id={uuid}`).
+Under the hood, the JavaScript client uploads files to *tusd*, passing the folder id as [upload metadata](https://tus.io/protocols/resumable-upload#upload-metadata) (`Upload-Metadata=folder-id {base64(uuid)}`).
 
 > Note: *tusd* would be proxied and not accessed directly by clients
 
@@ -116,7 +116,7 @@ sequenceDiagram
 
 ### Scheduled jobs
 
-* **Delete old folders**: Every folder whose oldest file is older than X days gets deleted. 
+* **Delete old folders**: Every folder whose oldest file is older than X days gets deleted.
 
 ## License
 

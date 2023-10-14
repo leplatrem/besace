@@ -1,0 +1,18 @@
+#!/bin/sh
+eventPayload=$(cat /dev/stdin | jq .)
+folder_id=$(echo $eventPayload | jq -r .Event.Upload.MetaData.folderId)
+
+REGEX_UUID='^/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}/$'
+# echo "$1" | grep -P -q $REGEX_DATE
+# echo $?
+
+source=$(echo $eventPayload | jq -r .Event.Upload.Storage.Path)
+
+echo "Checking folder ${BESACE_ROOT_FOLDER}/${folder_id}/" >&2
+if [ ! -d "${BESACE_ROOT_FOLDER}/${folder_id}" ]; then
+    echo "Unknown folder ${folder_id}" >&2
+    echo "Deleting ${source}" >&2
+    rm ${source}
+    echo "{\"detail\": \"Unknown folder ${folder_id}\"}"
+    exit 1
+fi
