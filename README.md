@@ -6,7 +6,7 @@ Temporary shared folders.
 
 Alice, Bob, and Carol spent the week-end together.
 
-1. Alice creates a new *Besace* folder, and gets a link https://mybesace.com/ABF9DA1B-F65F-4AC4-A87E-6E3C2BD36AC3/
+1. Alice creates a new *Besace* folder, and gets a link https://mybesace.com/#ossa-teneas-doctum
 2. Alice shares the link with her friends on a group chat
 3. The page shows an extremely simple interface: two big buttons, *Upload* and *Download*
 4. Alice starts uploading her files
@@ -22,12 +22,13 @@ Alice, Bob, and Carol spent the week-end together.
 - Minimalist tech
 - Resumable file uploads
 - Self-hostable
+- Protect creation of new folders with a master password (eg. maintain usage trustworthy)
 
 ## Ideas for the Future
 
 (Eventually) *Besace* could:
 
-- Protect creation of new folders with a master password (eg. maintain usage trustworthy)
+- Have a configurable maximum size per folder
 - Have state (eg. get only content that changed since last download)
 - Send notifications (eg. when new content is uploaded, folder about to expire, ...)
 - Have paid options (eg. password protected, extended expiration)
@@ -52,18 +53,15 @@ Alice, Bob, and Carol spent the week-end together.
 
 * Static Web pages
 * No database, file storage is source of truth
-* Folder names are just UUIDs that can't be guessed
-* https://tus.io/ Resumable file uploads
+* Folder names are just random words that can't be guessed easily
+* https://tus.io/ for resumable file uploads
 
 ### Creation of folders
 
 1. User visits homepage
 2. Creation form prompts for master password
-3. Once created, a snippet with folder URL is shown (copy & paste in group chat)
+3. Once created, the folder is shown (Use page URL to copy & paste in group chat)
 
-```
-Drop your files in my Besace at http://mybesace.com/ABF9DA1B-F65F-4AC4-A87E-6E3C2BD36AC3/
-```
 
 The API is just in charge of checking the master password and creating the folder:
 
@@ -81,11 +79,11 @@ sequenceDiagram
 2. User picks her file(s)
 3. Web page shows progress bar(s)
 
-Under the hood, the JavaScript client uploads files to *tusd*, passing the folder id as custom header (eg. `X-Besace-Folder-Id={uuid}`).
+Under the hood, the JavaScript client uploads files to *tusd*, passing the folder id as [upload metadata](https://tus.io/protocols/resumable-upload#upload-metadata) (`Upload-Metadata=folder-id {base64(uuid)}`).
 
-> Note: *tusd* would be proxied and not accessed directly by clients
+> Note: *tusd* is proxied and not accessed directly by clients
 
-We could use [tusd hooks](https://github.com/tus/tusd/blob/main/docs/hooks.md) to:
+We use [tusd hooks](https://github.com/tus/tusd/blob/main/docs/hooks.md) to:
 
 - check that target folder exists before uploading
 - move file to target folder when done uploading
@@ -104,19 +102,19 @@ sequenceDiagram
 
 ### Download of files
 
-1. User visits upload/download http://mybesace.com/ABF9DA1B-F65F-4AC4-A87E-6E3C2BD36AC3/
+1. User visits folder page https://mybesace.com/#ossa-teneas-doctum
 2. User clicks download button and obtains a Zip archive with all files
 
 ```mermaid
 sequenceDiagram
-    client->>+API: GET /folder/[folder-id]
+    client->>+API: GET /folder/[folder-id]/download
     API->>+API: Update [folder-id].zip
     API->>+client: [folder-id].zip
 ```
 
 ### Scheduled jobs
 
-* **Delete old folders**: Every folder whose oldest file is older than X days gets deleted. 
+* **Delete old folders**: Every folder whose oldest file is older than X days gets deleted.
 
 ## License
 

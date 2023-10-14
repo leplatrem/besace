@@ -1,0 +1,33 @@
+#!/bin/bash
+
+rename_if_exists() {
+    source_file="$1"
+    destination_file="$2"
+
+    if [ -e "$destination_file" ]; then
+        dir=$(dirname -- "$destination_file")
+        filename=$(basename -- "$destination_file")
+        extension="${filename##*.}"
+        filename="${filename%.*}"
+        suffix=2
+        while [ -e "${dir}/${filename} (${suffix}).${extension}" ]; do
+            ((suffix++))
+        done
+        destination_file="${dir}/${filename} (${suffix}).${extension}"
+    fi
+
+    echo "Moving uploaded file ${source_file} to ${destination_file}" >&2
+    mv "${source_file}" "${destination_file}"
+}
+
+
+eventPayload=$(cat /dev/stdin | jq .)
+folder_id=$(echo $eventPayload | jq -r .Event.Upload.MetaData.folderId)
+source=$(echo $eventPayload | jq -r .Event.Upload.Storage.Path)
+filename=$(echo $eventPayload | jq -r  .Event.Upload.MetaData.filename)
+
+destination="${BESACE_ROOT_FOLDER}/${folder_id}/${filename}"
+echo "source=${source}" >&2
+echo "destination=${destination}" >&2
+rename_if_exists "${source}" "${destination}"
+rm "${source}.info"

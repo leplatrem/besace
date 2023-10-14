@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="./vendored/uppy-v3.17.0.min.css" rel="stylesheet" />
+    <title>Besace</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+      }
+      #download {
+        all: initial;
+        font-family: inherit;
+        padding: 13px 22px;
+        width: auto;
+        background-color: lightgray;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1;
+        border-radius: 4px;
+        user-select: none;
+        transition-duration: 0.3s;
+        transition-property: background-color;
+      }
+      #download:not(:disabled):hover {
+        background-color: #189c38;
+      }
+      #download:not(:disabled) {
+        cursor: pointer;
+        background-color: #1bb240;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1 id="title"></h1>
+    <button id="download" disabled="true">Download</button>
+    <p id="details"></p>
+    <div id="uppy"></div>
+    <script type="module">
+      import {
+        DragDrop,
+        Dashboard,
+        GoldenRetriever,
+        ImageEditor,
+        StatusBar,
+        Tus,
+        Uppy,
+      } from "./vendored/uppy-v3.17.0.min.mjs";
+
+      function humanFileSize(size) {
+        const i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
+        return (
+          (size / Math.pow(1024, i)).toFixed(2) * 1 +
+          " " +
+          ["B", "kB", "MB", "GB", "TB"][i]
+        );
+      }
+
+      window.addEventListener("load", async (e) => {
+        let details;
+
+        const folderId = window.location.hash.slice(1);
+        if (!folderId) {
+          // User landed on home page without folder. Create one!
+          // TODO show welcome UI
+          while (true) {
+            const secret = window.prompt("Secret word?");
+            const respRaw = await fetch("/api/folder", {
+              method: "POST",
+              headers: {
+                Authorization: `key ${secret}`,
+              },
+            });
+            if (respRaw.status < 400) {
+              // Creation successful, proceed :)
+              details = await respRaw.json();
+              window.location.hash = details.folder;
+              break;
+            }
+          }
+        } else {
+          const respRaw = await fetch(`/api/folder/${folderId}`);
+          if (respRaw.status >= 400) {
+            document.getElementById(
+              "title",
+            ).textContent = `Unknown folder ${folderId}`;
+            // Exit UI load.
+            return;
+          }
+          details = await respRaw.json();
+        }
+
+        document.getElementById("title").textContent = details.folder;
+        const btnDownload = document.getElementById("download");
+        btnDownload.disabled = !details.files.length;
+        const size = details.files.reduce((acc, f) => {
+          acc += f.size;
+          return acc;
+        }, 0);
+        btnDownload.textContent = `Download ${
+          details.files.length
+        } files (${humanFileSize(size)})`;
+        btnDownload.addEventListener("click", (e) => {
+          window.location = `/api/folder/${details.folder}/download`;
+        });
+        if (details.files.length) {
+          const lastUpdate = new Date(details.files[0].modified * 1000);
+          document.getElementById(
+            "details",
+          ).textContent = `Last update: ${lastUpdate}`;
+        }
+
+        const uppy = new Uppy({
+          onBeforeUpload: (files) => {
+            // Set folder id on uploaded files.
+            Object.values(files).forEach((file) => {
+              file.meta.folderId = details.folder;
+            });
+            return true;
+          },
+        });
+        uppy
+          .use(Dashboard, { inline: true, target: "#uppy" })
+          .use(ImageEditor, { target: Dashboard })
+          .use(Tus, {
+            endpoint: "/tusd",
+          });
+        uppy.on("complete", async (result) => {
+          // Wait and refresh.
+          // TODO: show nice UI
+          setTimeout(() => window.location.reload(), 1000);
+        });
+      });
+    </script>
+  </body>
+
+  <footer>
+    <p>Besace is <a href="https://github.com/leplatrem/besace/">Open Source</a> - 2023 © <a href="https://mathieu.leplat.re">Author</a></p>
+  </footer>
+</html>

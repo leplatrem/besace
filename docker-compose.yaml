@@ -1,0 +1,61 @@
+version: "3.9"
+services:
+  #
+  # `tusd` offers resumable uploads.
+  # Files are first uploaded into `upload-dir` and
+  # then moved to Besace root folder in hooks scripts.
+  #
+  tusd:
+    image: tusproject/tusd:v2
+    environment:
+      - BESACE_ROOT_FOLDER=/srv/tusd-data/besace
+    volumes:
+      - ./hooks:/srv/tusd-hooks:ro
+      - tusd-data:/srv/tusd-data/incoming:rw
+      - root-folder:/srv/tusd-data/besace:rw
+    command: -hooks-dir /srv/tusd-hooks -base-path /tusd/ -upload-dir /srv/tusd-data/incoming -behind-proxy -hooks-enabled-events "pre-create,post-finish" -max-size 1000000000
+    expose:
+      - "8080"
+
+  #
+  # `api` creates Besace folders, returns files lists,
+  # generates downloadable archives, etc.
+  #
+  api:
+    build:
+      context: ./api/
+      args:
+        # Same as tusd to share writable folder
+        userid: 1000
+        groupid: 1000
+    image: api
+    # Let the init system handle signals for us.
+    # among other things this helps shutdown be fast
+    init: true
+    environment:
+      - ROOT_URL_PATH=/api
+      - BESACE_ROOT_FOLDER=/mnt/uploads
+      - BESACE_RETENTION_DAYS=7
+      - BESACE_CREATE_SECRETS=${BESACE_CREATE_SECRETS:-s2cr2t,s3cr3t}
+    volumes:
+      - ./api:/app:rw
+      - root-folder:/mnt/uploads:rw
+    expose:
+      - "8000"
+
+  #
+  # `web` serves the static files for the Web UI, and
+  # is the reverse proxy for `api` and `tusd`.
+  #
+  web:
+    image: nginx:latest
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./html:/var/www:ro
+    ports:
+      - 80:80
+
+volumes:
+  tusd-data:
+  root-folder:
+  hooks:
