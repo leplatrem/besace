@@ -6,6 +6,7 @@ services:
   # then moved to Besace root folder in hooks scripts.
   #
   tusd:
+    restart: unless-stopped
     image: tusproject/tusd:v2
     environment:
       - BESACE_ROOT_FOLDER=/srv/tusd-data/besace
@@ -22,6 +23,7 @@ services:
   # generates downloadable archives, etc.
   #
   api:
+    restart: unless-stopped
     build:
       context: ./api/
       args:
@@ -48,6 +50,7 @@ services:
   # is the reverse proxy for `api` and `tusd`.
   #
   web:
+    restart: unless-stopped
     image: nginx:latest
     volumes:
       - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
