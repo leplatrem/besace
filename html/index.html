@@ -70,20 +70,26 @@
         const folderId = window.location.hash.slice(1);
         if (!folderId) {
           // User landed on home page without folder. Create one!
-          // TODO show welcome UI
+          let createSecret = localStorage.getItem("create-secret");
           while (true) {
-            const secret = window.prompt("Secret word?");
+            if (!createSecret) {
+              createSecret = window.prompt("Secret word?") || "";
+            }
             const respRaw = await fetch("/api/folder", {
               method: "POST",
               headers: {
-                Authorization: `key ${secret}`,
+                Authorization: `key ${createSecret}`,
               },
             });
             if (respRaw.status < 400) {
               // Creation successful, proceed :)
               details = await respRaw.json();
               window.location.hash = details.folder;
+              localStorage.setItem("create-secret", createSecret);
               break;
+            } else {
+              createSecret = "";
+              localStorage.removeItem("create-secret");
             }
           }
         } else {
