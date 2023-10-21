@@ -17,6 +17,8 @@ services:
     command: -hooks-dir /srv/tusd-hooks -base-path /tusd/ -upload-dir /srv/tusd-data/incoming -behind-proxy -hooks-enabled-events "pre-create,post-finish" -max-size 1000000000
     expose:
       - "8080"
+    ports:
+      - 127.0.0.1:9001:8080
 
   #
   # `api` creates Besace folders, returns files lists,
@@ -44,6 +46,8 @@ services:
       - root-folder:/mnt/uploads:rw
     expose:
       - "8000"
+    ports:
+      - 127.0.0.1:9002:8000
 
   #
   # `web` serves the static files for the Web UI, and
