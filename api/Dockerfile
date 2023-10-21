@@ -45,4 +45,4 @@ WORKDIR /app
 COPY --chown=app:app . .
 
 EXPOSE $PORT
-CMD ["sh", "-c", "uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_URL_PATH}"]
+CMD ["sh", "-c", "uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_URL_PATH} --proxy-headers"]
