@@ -134,9 +134,10 @@
             endpoint: "/tusd",
           });
         uppy.on("complete", async (result) => {
-          // Wait and refresh.
-          // TODO: show nice UI
-          setTimeout(() => window.location.reload(), 1000);
+          // If successful, wait and refresh.
+          if (result.failed.length == 0) {
+            setTimeout(() => window.location.reload(), 1000);
+          }
         });
       });
     </script>
