@@ -89,9 +89,11 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def read_root(request: Request):
+    root_url = request.url_for("read_root")
     return {
         "Hello": "World",
         "root_path": request.scope.get("root_path"),
+        "root_url": str(root_url),
     }
 
 
