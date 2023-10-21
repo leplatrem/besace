@@ -7,13 +7,30 @@
     <title>Besace</title>
     <style>
       body {
-        font-family:
-          system-ui,
-          Roboto,
-          Helvetica,
-          Arial,
-          sans-serif;
+        font-family: system-ui, Roboto, Helvetica, Arial, sans-serif;
+
+        padding: 0px;
+        margin: 0px;
+        overflow: hidden;
       }
+      #container {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto;
+
+        width: 100vw;
+        height: 100vh;
+        min-height: 100%;
+
+        > * {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+      }
+      #uppy {
+        overflow-y: scroll;
+      }
+
       #download {
         all: initial;
         font-family: inherit;
@@ -36,14 +53,30 @@
         cursor: pointer;
         background-color: #1bb240;
       }
+
+      footer {
+        font-size: 75%;
+      }
     </style>
   </head>
 
   <body>
-    <h1 id="title"></h1>
-    <button id="download" disabled="true">Download</button>
-    <p id="details"></p>
-    <div id="uppy"></div>
+    <div id="container">
+      <h1 id="title"></h1>
+      <div ide="details">
+        <button id="download" disabled="true">Download</button>
+        <p id="details"></p>
+      </div>
+      <div id="uppy"></div>
+      <footer>
+        <p>
+          Besace is
+          <a href="https://github.com/leplatrem/besace/">Open Source</a> - 2023
+          © <a href="https://mathieu.leplat.re">Author</a>
+        </p>
+      </footer>
+    </div>
+
     <script type="module">
       import {
         DragDrop,
@@ -134,7 +167,12 @@
           },
         });
         uppy
-          .use(Dashboard, { inline: true, target: "#uppy" })
+          .use(Dashboard, {
+            inline: true,
+            target: "#uppy",
+            height: document.getElementById("uppy").offsetHeight,
+            width: document.getElementById("uppy").offsetWidth,
+          })
           .use(ImageEditor, { target: Dashboard })
           .use(Tus, {
             endpoint: "/tusd",
@@ -148,8 +186,4 @@
       });
     </script>
   </body>
-
-  <footer>
-    <p>Besace is <a href="https://github.com/leplatrem/besace/">Open Source</a> - 2023 © <a href="https://mathieu.leplat.re">Author</a></p>
-  </footer>
 </html>
