@@ -132,6 +132,10 @@ def get_folder(folder_id: str):
     return {
         "folder": folder_id,
         "files": sorted(files, key=lambda v: v["modified"], reverse=True),
+        "created": os.path.getmtime(folder_dir),
+        "settings": {
+            "retention_days": RETENTION_DAYS,
+        }
     }
 
 

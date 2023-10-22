@@ -4,8 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="./vendored/uppy-v3.17.0.min.css" rel="stylesheet" />
-    <title>Besace</title>
+    <title>Besace - Temporary Shared Folders</title>
     <style>
+      *,
+      *:before,
+      *:after {
+        box-sizing: border-box;
+      }
       body {
         font-family: system-ui, Roboto, Helvetica, Arial, sans-serif;
 
@@ -23,12 +28,29 @@
         min-height: 100%;
 
         > * {
+          padding-top: 10px;
           padding-left: 10px;
           padding-right: 10px;
+        }
+
+        h1 {
+          margin: 0px;
         }
       }
       #uppy {
         overflow-y: scroll;
+      }
+
+      #top {
+        display: flex;
+
+        p {
+          padding-left: 0.5em;
+        }
+      }
+
+      #details {
+        display: flex;
       }
 
       #download {
@@ -62,10 +84,12 @@
 
   <body>
     <div id="container">
-      <h1 id="title"></h1>
-      <div ide="details">
+      <div id="top">
+        <h1 id="title"></h1>
+        <p id="last-update"></p>
+      </div>
+      <div id="details">
         <button id="download" disabled="true">Download</button>
-        <p id="details"></p>
       </div>
       <div id="uppy"></div>
       <footer>
@@ -77,6 +101,9 @@
       </footer>
     </div>
 
+    <script src="vendored/dayjs.min.js"></script>
+    <script src="vendored/dayjs-relativeTime.js"></script>
+
     <script type="module">
       import {
         DragDrop,
@@ -87,6 +114,7 @@
         Tus,
         Uppy,
       } from "./vendored/uppy-v3.17.0.min.mjs";
+      dayjs.extend(dayjs_plugin_relativeTime);
 
       function humanFileSize(size) {
         const i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
@@ -138,24 +166,36 @@
         }
 
         document.getElementById("title").textContent = details.folder;
+
         const btnDownload = document.getElementById("download");
         btnDownload.disabled = !details.files.length;
         const size = details.files.reduce((acc, f) => {
           acc += f.size;
           return acc;
         }, 0);
-        btnDownload.textContent = `Download ${
-          details.files.length
-        } files (${humanFileSize(size)})`;
+        btnDownload.textContent = `Download ${details.files.length} file${
+          details.files.length > 1 ? "s" : ""
+        } (${humanFileSize(size)})`;
         btnDownload.addEventListener("click", (e) => {
           window.location = `/api/folder/${details.folder}/download`;
         });
         if (details.files.length) {
           const lastUpdate = new Date(details.files[0].modified * 1000);
-          document.getElementById(
-            "details",
-          ).textContent = `Last update: ${lastUpdate}`;
+          const lastUpdateElt = document.getElementById("last-update");
+          lastUpdateElt.setAttribute("title", lastUpdate.toLocaleDateString());
+          lastUpdateElt.textContent = `Last upload: ${dayjs(
+            lastUpdate,
+          ).fromNow()}`;
         }
+
+        const folderCreated = new Date(details.created * 1000);
+        const folderExpires = new Date(
+          (details.created + details.settings.retention_days * 3600 * 24) *
+            1000,
+        );
+        const uppyNote = `This Besace temporary shared folder already contains ${details.files.length} file${details.files.length > 1 ? "s" : ""}. It was created ${dayjs(
+          folderCreated,
+        ).fromNow()} and will expire ${dayjs(folderExpires).fromNow()}. Peace 💚`;
 
         const uppy = new Uppy({
           onBeforeUpload: (files) => {
@@ -172,10 +212,11 @@
             target: "#uppy",
             height: document.getElementById("uppy").offsetHeight,
             width: document.getElementById("uppy").offsetWidth,
+            note: uppyNote,
           })
           .use(ImageEditor, { target: Dashboard })
           .use(Tus, {
-            endpoint: "/tusd",
+            endpoint: window.location.href.split("#")[0] + "tusd",
           });
         uppy.on("complete", async (result) => {
           // If successful, wait and refresh.
