@@ -31,6 +31,7 @@ def check_api_secret(
     except ValueError:
         secret = None
     if secret in CREATE_SECRETS:
+        print(f"Using secret '{f[:2]..}'")
         return api_key_header
     raise HTTPException(
         status_code=401,
