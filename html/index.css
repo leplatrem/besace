@@ -33,17 +33,18 @@ body {
 #top {
   display: flex;
   align-items: center;
+}
 
-  h1 {
+  #top h1 {
     margin: 0px;
     white-space: nowrap;
   }
 
-  img {
+  #top img {
     max-height: 32px;
   }
 
-  a {
+  #top a {
     color: transparent;
     transition: color 0.3s;
 
@@ -51,13 +52,14 @@ body {
       color: unset; 
     }
   }
-}
+
 
 #toolbar {
   display: flex;
   align-items: end;
+}
 
-  button {
+  #toolbar button {
     all: initial;
     font-family: inherit;
     
@@ -72,20 +74,22 @@ body {
     transition-duration: 0.3s;
     transition-property: background-color;
     text-align: center;
+  }
 
-    img {
+    #toolbar button img {
       max-height: 2.5em;
     }
-  }
-  button:not(:disabled):hover {
+
+
+  #toolbar button:not(:disabled):hover {
     background-color: #189c38;
   }
-  button:not(:disabled) {
+  #toolbar button:not(:disabled) {
     cursor: pointer;
     background-color: #1bb240;
   }
 
-  #download {
+  #toolbar #download {
     padding: 13px;
     padding-right: 22px;
     display: flex;
@@ -94,24 +98,24 @@ body {
     flex-shrink: 0;
   }
 
-  #preview {
+  #toolbar #preview {
     padding: 12px;
     margin-left: 0.5em;
     margin-right: 0.5em;
 
     flex-shrink: 0;
-
-    &:not(:disabled) {
-      background-color: #ffdb83;
-    }
   }
 
-  #last-update {
+    #toolbar #preview&:not(:disabled) {
+      background-color: #ffdb83;
+    }
+
+
+  #toolbar #last-update {
     margin-left: 0.5em;
     margin-top: 0px;
     margin-bottom: 0px;
   }
-}
 
 li.filelist {
   font-weight: bold;
