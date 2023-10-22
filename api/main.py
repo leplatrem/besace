@@ -18,6 +18,7 @@ CREATE_SECRETS = os.getenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t").split(",")
 FOLDER_WORDS_MIN_LENGTH = 3
 FOLDER_WORDS_MAX_LENGTH = 6
 FOLDER_WORDS_COUNT = 3
+LOG_SECRET_REVEAL_LENGTH = int(os.getenv("LOG_SECRET_REVEAL_LENGTH", "3"))
 
 
 api_secret_header = APIKeyHeader(name="Authorization")
@@ -31,7 +32,7 @@ def check_api_secret(
     except ValueError:
         secret = None
     if secret in CREATE_SECRETS:
-        print(f"Using secret '{f[:2]..}'")
+        print(f"Using secret '{secret[:LOG_SECRET_REVEAL_LENGTH]}..'")
         return api_key_header
     raise HTTPException(
         status_code=401,

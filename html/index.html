@@ -1,95 +1,30 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <title>Besace - Temporary Shared Folders</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="./vendored/uppy-v3.17.0.min.css" rel="stylesheet" />
-    <title>Besace - Temporary Shared Folders</title>
-    <style>
-      *,
-      *:before,
-      *:after {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: system-ui, Roboto, Helvetica, Arial, sans-serif;
-
-        padding: 0px;
-        margin: 0px;
-        overflow: hidden;
-      }
-      #container {
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr auto;
-
-        width: 100vw;
-        height: 100vh;
-        min-height: 100%;
-
-        > * {
-          padding-top: 10px;
-          padding-left: 10px;
-          padding-right: 10px;
-        }
-
-        h1 {
-          margin: 0px;
-        }
-      }
-      #uppy {
-        overflow-y: scroll;
-      }
-
-      #top {
-        display: flex;
-
-        p {
-          padding-left: 0.5em;
-        }
-      }
-
-      #details {
-        display: flex;
-      }
-
-      #download {
-        all: initial;
-        font-family: inherit;
-        padding: 13px 22px;
-        width: auto;
-        background-color: lightgray;
-        color: #fff;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 1;
-        border-radius: 4px;
-        user-select: none;
-        transition-duration: 0.3s;
-        transition-property: background-color;
-      }
-      #download:not(:disabled):hover {
-        background-color: #189c38;
-      }
-      #download:not(:disabled) {
-        cursor: pointer;
-        background-color: #1bb240;
-      }
-
-      footer {
-        font-size: 75%;
-      }
-    </style>
+    <link href="./vendored/tingle.min.css" rel="stylesheet" />
+    <link href="index.css" rel="stylesheet" />
   </head>
 
   <body>
     <div id="container">
       <div id="top">
         <h1 id="title"></h1>
-        <p id="last-update"></p>
+        <a id="share"><img src="vendored/share.svg" />Copied!</a>
       </div>
-      <div id="details">
-        <button id="download" disabled="true">Download</button>
+      <div id="toolbar">
+        <button id="download" disabled="true">
+          <img src="vendored/download.svg" />
+          <span id="download-label">Download</span>
+          <span id="download-size"></span>
+        </button>
+        <button id="preview" disabled="true">
+          <img src="vendored/folder-search.svg" />
+        </button>
+        <p id="last-update"></p>
       </div>
       <div id="uppy"></div>
       <footer>
@@ -103,128 +38,7 @@
 
     <script src="vendored/dayjs.min.js"></script>
     <script src="vendored/dayjs-relativeTime.js"></script>
-
-    <script type="module">
-      import {
-        DragDrop,
-        Dashboard,
-        GoldenRetriever,
-        ImageEditor,
-        StatusBar,
-        Tus,
-        Uppy,
-      } from "./vendored/uppy-v3.17.0.min.mjs";
-      dayjs.extend(dayjs_plugin_relativeTime);
-
-      function humanFileSize(size) {
-        const i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
-        return (
-          (size / Math.pow(1024, i)).toFixed(2) * 1 +
-          " " +
-          ["B", "kB", "MB", "GB", "TB"][i]
-        );
-      }
-
-      window.addEventListener("load", async (e) => {
-        let details;
-
-        const folderId = window.location.hash.slice(1);
-        if (!folderId) {
-          // User landed on home page without folder. Create one!
-          let createSecret = localStorage.getItem("create-secret");
-          while (true) {
-            if (!createSecret) {
-              createSecret = window.prompt("Secret word?") || "";
-            }
-            const respRaw = await fetch("/api/folder", {
-              method: "POST",
-              headers: {
-                Authorization: `key ${createSecret}`,
-              },
-            });
-            if (respRaw.status < 400) {
-              // Creation successful, proceed :)
-              details = await respRaw.json();
-              window.location.hash = details.folder;
-              localStorage.setItem("create-secret", createSecret);
-              break;
-            } else {
-              createSecret = "";
-              localStorage.removeItem("create-secret");
-            }
-          }
-        } else {
-          const respRaw = await fetch(`/api/folder/${folderId}`);
-          if (respRaw.status >= 400) {
-            document.getElementById(
-              "title",
-            ).textContent = `Unknown folder ${folderId}`;
-            // Exit UI load.
-            return;
-          }
-          details = await respRaw.json();
-        }
-
-        document.getElementById("title").textContent = details.folder;
-
-        const btnDownload = document.getElementById("download");
-        btnDownload.disabled = !details.files.length;
-        const size = details.files.reduce((acc, f) => {
-          acc += f.size;
-          return acc;
-        }, 0);
-        btnDownload.textContent = `Download ${details.files.length} file${
-          details.files.length > 1 ? "s" : ""
-        } (${humanFileSize(size)})`;
-        btnDownload.addEventListener("click", (e) => {
-          window.location = `/api/folder/${details.folder}/download`;
-        });
-        if (details.files.length) {
-          const lastUpdate = new Date(details.files[0].modified * 1000);
-          const lastUpdateElt = document.getElementById("last-update");
-          lastUpdateElt.setAttribute("title", lastUpdate.toLocaleDateString());
-          lastUpdateElt.textContent = `Last upload: ${dayjs(
-            lastUpdate,
-          ).fromNow()}`;
-        }
-
-        const folderCreated = new Date(details.created * 1000);
-        const folderExpires = new Date(
-          (details.created + details.settings.retention_days * 3600 * 24) *
-            1000,
-        );
-        const uppyNote = `This Besace temporary shared folder already contains ${details.files.length} file${details.files.length > 1 ? "s" : ""}. It was created ${dayjs(
-          folderCreated,
-        ).fromNow()} and will expire ${dayjs(folderExpires).fromNow()}. Peace 💚`;
-
-        const uppy = new Uppy({
-          onBeforeUpload: (files) => {
-            // Set folder id on uploaded files.
-            Object.values(files).forEach((file) => {
-              file.meta.folderId = details.folder;
-            });
-            return true;
-          },
-        });
-        uppy
-          .use(Dashboard, {
-            inline: true,
-            target: "#uppy",
-            height: document.getElementById("uppy").offsetHeight,
-            width: document.getElementById("uppy").offsetWidth,
-            note: uppyNote,
-          })
-          .use(ImageEditor, { target: Dashboard })
-          .use(Tus, {
-            endpoint: window.location.href.split("#")[0] + "tusd",
-          });
-        uppy.on("complete", async (result) => {
-          // If successful, wait and refresh.
-          if (result.failed.length == 0) {
-            setTimeout(() => window.location.reload(), 1000);
-          }
-        });
-      });
-    </script>
+    <script src="vendored/tingle.min.js"></script>
+    <script type="module" src="index.mjs"></script>
   </body>
 </html>
