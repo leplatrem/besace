@@ -8,7 +8,7 @@ Alice, Bob, and Carol spent the week-end together.
 
 1. Alice creates a new *Besace* folder, and gets a link https://mybesace.com/#ossa-teneas-doctum
 2. Alice shares the link with her friends on a group chat
-3. The page shows an extremely simple interface: two big buttons, *Upload* and *Download*
+3. The page shows an extremely simple interface: to *Upload* and *Download* files
 4. Alice starts uploading her files
 5. Bob and Carol do the same, and tell when they're done on the group chat
 6. Anyone can download the content of the folder during 7 days, before it gets deleted forever
@@ -18,7 +18,6 @@ Alice, Bob, and Carol spent the week-end together.
 - No authentication
 - Avoid sharing pictures and videos on chat applications
 - Keep original quality and definition
-- Detect duplicates
 - Minimalist tech
 - Resumable file uploads
 - Self-hostable
@@ -75,7 +74,7 @@ sequenceDiagram
 
 ### Upload of files
 
-1. User visits upload/download http://mybesace.com/ABF9DA1B-F65F-4AC4-A87E-6E3C2BD36AC3/
+1. User visits upload/download https://mybesace.com/#ossa-teneas-doctum
 2. User picks her file(s)
 3. Web page shows progress bar(s)
 
@@ -114,7 +113,29 @@ sequenceDiagram
 
 ### Scheduled jobs
 
-* **Delete old folders**: Every folder whose oldest file is older than X days gets deleted.
+* **Delete old folders**: Every folder whose oldest file is older than `BESACE_RETENTION_DAYS` days gets deleted.
+
+## Development
+
+Keep it fun.
+
+## Run locally
+
+```
+docker compose up
+```
+
+Visit http://localhost:8080
+
+## Deployment
+
+On my server, *Besace* is deployed with:
+
+* A `local.env` file with the creation password values `BESACE_CREATE_SECRETS=s2cr2t,s3cr3t`
+* Docker Compose that runs the *tusd* and Web API containers with `docker compose --env-file ./local.env up -d tusd api`
+* Apache as a reverse proxy and SSL termination (see [example conf](config/apache2.conf))
+
+> Note: Apache because that's what my server has been running for 20 years.
 
 ## License
 
