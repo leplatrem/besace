@@ -154,7 +154,6 @@ def get_folder_archive(folder_id: str):
     print(f"Updating archive {folder_archive!r}")
     with zipfile.ZipFile(folder_archive, "a") as archive:
         existing = archive.namelist()
-        # TODO: check modified timestamp
         for filename in filenames:
             if filename not in existing:
                 archive.write(os.path.join(folder_dir, filename), filename)
