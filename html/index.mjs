@@ -147,7 +147,7 @@ window.addEventListener("load", async (e) => {
     .use(Dashboard, {
       inline: true,
       target: "#uppy",
-      height: document.getElementById("uppy").offsetHeight,
+      height: document.getElementById("uppy").offsetHeight - 30,
       width: document.getElementById("uppy").offsetWidth,
       note: uppyNote,
       locale: {
