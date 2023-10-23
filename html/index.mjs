@@ -90,17 +90,19 @@ window.addEventListener("load", async (e) => {
   btnPreview.addEventListener("click", (e) => {
     const filesByDay = details.files.reduce((acc, file) => {
       const day = new Date(file.modified * 1000).toDateString();
-      acc[day] = acc[day] || [];
-      acc[day].push(file);
+      if (!acc.has(day)) {
+        acc.set(day, []);
+      }
+      acc.get(day).push(file);
       return acc;
-    }, {});
+    }, new Map());
 
     let content = `<h3>List of ${details.files.length} file${
       details.files.length > 1 ? "s" : ""
     }</h3>`;
-    for (const day of Object.keys(filesByDay).sort()) {
+    for (const day of filesByDay.keys()) {
       content += `<p>Uploaded on ${day}</p><ul>`;
-      for (const file of filesByDay[day]) {
+      for (const file of filesByDay.get(day)) {
         content += `<li class="filelist">${
           file.filename
         } <span class="size">(${humanFileSize(file.size)})</span></li>`;
