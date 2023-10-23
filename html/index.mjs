@@ -24,6 +24,7 @@ window.addEventListener("load", async (e) => {
   const folderId = window.location.hash.slice(1);
   if (!folderId) {
     // User landed on home page without folder. Create one!
+    document.getElementById("title").textContent = "Create new...";
     let createSecret = localStorage.getItem("create-secret");
     while (true) {
       if (!createSecret) {
