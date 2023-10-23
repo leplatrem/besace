@@ -79,10 +79,10 @@ window.addEventListener("load", async (e) => {
     const url = window.location.href;
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(url);
+      btnShare.className = "copied";
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      btnShare.className = "";
     }
-    btnShare.className = "copied";
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    btnShare.className = "";
   });
 
   const btnPreview = document.getElementById("preview");
