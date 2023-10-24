@@ -4,7 +4,13 @@ folder_id=$(echo $eventPayload | jq -r .Event.Upload.MetaData.folderId)
 source=$(echo $eventPayload | jq -r .Event.Upload.Storage.Path)
 
 echo "Receiving ${source}" >&2
-# TODO: check that folder_id does not have '/' or '.'
+
+if [[ "${folder_id}" == *\/* ]]; then
+    echo "Invalid folder ${folder_id}" >&2
+    echo "{\"detail\": \"Invalid folder ${folder_id}\"}"
+    exit 1
+fi
+
 echo "Checking folder ${BESACE_ROOT_FOLDER}/${folder_id}/" >&2
 if [ ! -d "${BESACE_ROOT_FOLDER}/${folder_id}" ]; then
     echo "Unknown folder ${folder_id}" >&2
