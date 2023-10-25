@@ -1,9 +1,6 @@
 import {
-  DragDrop,
   Dashboard,
-  GoldenRetriever,
   ImageEditor,
-  StatusBar,
   Tus,
   Uppy,
 } from "./vendored/uppy-v3.17.0.min.mjs";
