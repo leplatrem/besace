@@ -156,6 +156,9 @@ window.addEventListener("load", async (e) => {
           poweredBy: "%{uppy}",
         },
       },
+      restrictions: {
+        maxFileSize: 1000000000, // See tusd `-max-size` command parameter
+      }
     })
     .use(ImageEditor, { target: Dashboard })
     .use(Tus, {

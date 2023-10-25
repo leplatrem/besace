@@ -26,7 +26,7 @@ folder_id=$(echo $eventPayload | jq -r .Event.Upload.MetaData.folderId)
 
 if [[ "${folder_id}" == *\/* ]]; then
     echo "Invalid folder ${folder_id}" >&2
-    echo "{\"detail\": \"Invalid folder ${folder_id}\"}"
+    echo "{\"detail\": \"Invalid folder '${folder_id}'\"}"
     exit 1
 fi
 
@@ -35,7 +35,7 @@ filename=$(echo $eventPayload | jq -r  .Event.Upload.MetaData.filename)
 
 if [[ "${filename}" == *\/* ]]; then
     echo "Invalid filename ${filename}" >&2
-    echo "{\"detail\": \"Invalid filename ${filename}\"}"
+    echo "{\"detail\": \"Invalid filename '${filename}'\"}"
     exit 1
 fi
 
