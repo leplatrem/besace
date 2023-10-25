@@ -171,3 +171,10 @@ window.addEventListener("load", async (e) => {
     }
   });
 });
+
+
+function onResize() {
+  document.documentElement.style.setProperty("--doc-height", `${window.innerHeight}px`);
+}
+window.addEventListener("resize", onResize);
+onResize();

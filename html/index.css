@@ -1,3 +1,7 @@
+:root {
+  --doc-height: 100vh;
+}
+
 *,
 *:before,
 *:after {
@@ -17,7 +21,7 @@ body {
 
   width: 100vw;
   height: 100vh;
-  min-height: 100%;
+  height: var(--doc-height);
 
   > * {
     padding-top: 10px;
@@ -28,6 +32,7 @@ body {
 
 #uppy {
   overflow-y: scroll;
+  height: 100%;
 }
 
 #top {
