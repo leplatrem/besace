@@ -39,6 +39,19 @@ if [[ "${filename}" == *\/* ]]; then
     exit 1
 fi
 
+md5file="${BESACE_ROOT_FOLDER}/${folder_id}.md5"
+md5info=$(md5sum "$source")
+md5hash=${md5info%%' '*}
+touch $md5file
+
+if grep -q $md5hash "${md5file}"; then
+    echo "Ignoring duplicate file '${filename}'" >&2
+    rm "${source}"
+    rm "${source}.info"
+    exit 0
+fi
+echo ${md5hash} >> ${md5file}
+
 destination="${BESACE_ROOT_FOLDER}/${folder_id}/${filename}"
 echo "source=${source}" >&2
 echo "destination=${destination}" >&2

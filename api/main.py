@@ -173,5 +173,6 @@ def delete_folder(folder_id: str, _secret: str = Security(check_api_secret)):
     except FileNotFoundError:
         # Archive was never requested.
         pass
+    os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.md5"))
     print(f"Deleted folder {folder_dir!r}")
     return {}
