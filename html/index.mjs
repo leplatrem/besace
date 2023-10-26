@@ -123,15 +123,18 @@ window.addEventListener("load", async (e) => {
   const folderExpires = new Date(
     (details.created + details.settings.retention_days * 3600 * 24) * 1000,
   );
-  const uppyNote = `This Besace temporary shared folder already contains ${
+  const uppyNote = `This Besace temporary shared folder contains ${
     details.files.length
   } file${details.files.length > 1 ? "s" : ""}. It was created ${dayjs(
     folderCreated,
   ).fromNow()} and will be permanently deleted ${dayjs(
     folderExpires,
-  ).fromNow()}. Peace 💚`;
+  ).fromNow()}. Remember that you are uploading files to a remote computer that is not yours. Peace 💚 `;
 
   const uppy = new Uppy({
+    restrictions: {
+      maxFileSize: 1000000000, // See tusd `-max-size` command parameter
+    },
     onBeforeUpload: (files) => {
       // Set folder id on uploaded files.
       Object.values(files).forEach((file) => {
@@ -153,9 +156,6 @@ window.addEventListener("load", async (e) => {
           poweredBy: "%{uppy}",
         },
       },
-      restrictions: {
-        maxFileSize: 1000000000, // See tusd `-max-size` command parameter
-      }
     })
     .use(ImageEditor, { target: Dashboard })
     .use(Tus, {

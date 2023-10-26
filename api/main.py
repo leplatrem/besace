@@ -1,4 +1,4 @@
-from contextlib import asynccontextmanager
+import asyncio
 import datetime
 import functools
 import os
@@ -6,6 +6,7 @@ import random
 import shutil
 import tempfile
 import zipfile
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.responses import FileResponse, RedirectResponse
@@ -19,12 +20,13 @@ FOLDER_WORDS_MIN_LENGTH = 3
 FOLDER_WORDS_MAX_LENGTH = 6
 FOLDER_WORDS_COUNT = 3
 LOG_SECRET_REVEAL_LENGTH = int(os.getenv("LOG_SECRET_REVEAL_LENGTH", "3"))
+INVALID_SECRET_WAIT_SECONDS = int(os.getenv("INVALID_SECRET_WAIT_SECONDS", "2"))
 
 
 api_secret_header = APIKeyHeader(name="Authorization")
 
 
-def check_api_secret(
+async def check_api_secret(
     api_key_header: str = Security(api_secret_header),
 ) -> str:
     try:
@@ -34,6 +36,8 @@ def check_api_secret(
     if secret in CREATE_SECRETS:
         print(f"Using secret '{secret[:LOG_SECRET_REVEAL_LENGTH]}..'")
         return api_key_header
+    # Let's slow down retries here...
+    await asyncio.sleep(INVALID_SECRET_WAIT_SECONDS)
     raise HTTPException(
         status_code=401,
         detail="Invalid or missing API Secret",
