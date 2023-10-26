@@ -75,7 +75,10 @@ window.addEventListener("load", async (e) => {
   btnShare.addEventListener("click", async (e) => {
     e.preventDefault();
     const url = window.location.href;
-    if (navigator.clipboard) {
+    if (navigator.share) {
+      await navigator.share({ url });
+    }
+    else if (navigator.clipboard) {
       await navigator.clipboard.writeText(url);
       btnShare.className = "copied";
       await new Promise((resolve) => setTimeout(resolve, 800));
