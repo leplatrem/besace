@@ -13,6 +13,7 @@ Alice, Bob, and Carol spent the week-end together.
 5. Bob and Carol do the same, and tell when they're done on the group chat
 6. Anyone can download the content of the folder during 7 days, before it gets deleted forever
 
+
 ## Goals
 
 - No authentication
@@ -23,6 +24,7 @@ Alice, Bob, and Carol spent the week-end together.
 - Self-hostable
 - Detect duplicate files
 - Protect creation of new folders with a master password (eg. maintain usage trustworthy)
+
 
 ## Ideas for the Future
 
@@ -37,7 +39,14 @@ Alice, Bob, and Carol spent the week-end together.
 
 (*But I'll probably focus on another side-project by then...*)
 
+
 ## Existing Alternatives
+
+### WhatsApp, Telegram
+
+- Loss of quality (1600 pixels)
+- No bulk download of files
+- Files hosted in GAFAM cloud
 
 ### GDrive, GPhotos, Dropbox, iCloud
 
@@ -52,7 +61,18 @@ Alice, Bob, and Carol spent the week-end together.
 
 - Only one user can upload
 
-## Architecture
+### Eventer
+
+- Only photos and videos
+- Overkill for a weekend between friends
+
+### Chevereto
+
+- Image oriented
+- No notion of folder
+
+
+## Besace's Architecture
 
 * Static Web pages
 * No database, file storage is source of truth
@@ -123,9 +143,11 @@ sequenceDiagram
 
 > Note: for the sake of simplicity, we don't have *scheduled* jobs (for now), the expired folders are deleted everytime a new folder is created.
 
+
 ## Development
 
 Keep it fun.
+
 
 ## Run locally
 
@@ -134,6 +156,7 @@ docker compose up
 ```
 
 Visit http://localhost:8080
+
 
 ## Host yours!
 
@@ -149,6 +172,7 @@ As an example on my server, *Besace* is deployed with:
 > Note: Apache because that's what my server has been running for 20 years.
 
 > Note: You may want to be extra-careful when sharing links to the world. The Internetz can be extremely wild when it comes to free hosting of files. According to the laws of your jurisdiction, **you may bear legal responsibility for the content you share**. At least make sure that your secrets are long and difficult to guess, and change them regularly.
+
 
 ## License
 
