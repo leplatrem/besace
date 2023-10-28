@@ -81,7 +81,7 @@ window.addEventListener("load", async (e) => {
     else if (navigator.clipboard) {
       await navigator.clipboard.writeText(url);
       btnShare.className = "copied";
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       btnShare.className = "";
     }
   });
