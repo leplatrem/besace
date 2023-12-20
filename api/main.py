@@ -57,11 +57,12 @@ def purge_old_folders():
     folders = [
         (f, os.path.getmtime(os.path.join(ROOT_FOLDER, f)))
         for f in os.listdir(ROOT_FOLDER)
-        if os.path.isdir(f)
+        if os.path.isdir(os.path.join(ROOT_FOLDER, f))
     ]
+    print(f"{len(folders)} folders in {ROOT_FOLDER}")
     for folder, timestamp in folders:
         dt = datetime.datetime.fromtimestamp(timestamp)
-        if age := (now - dt).days > RETENTION_DAYS:
+        if (age := (now - dt).days) > RETENTION_DAYS:
             print(f"Purging old folder {folder} (age={age})")
             delete_folder(folder_id=folder, _secret="")
 
@@ -176,6 +177,11 @@ def delete_folder(folder_id: str, _secret: str = Security(check_api_secret)):
         os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.zip"))
     except FileNotFoundError:
         # Archive was never requested.
+        pass
+    try:
+        os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.md5"))
+    except FileNotFoundError:
+        # No file added to the folder (md5 happens in hook).
         pass
     os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.md5"))
     print(f"Deleted folder {folder_dir!r}")
