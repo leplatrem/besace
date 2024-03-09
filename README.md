@@ -174,6 +174,10 @@ As an example on my server, *Besace* is deployed with:
 > Note: You may want to be extra-careful when sharing links to the world. The Internetz can be extremely wild when it comes to free hosting of files. According to the laws of your jurisdiction, **you may bear legal responsibility for the content you share**. At least make sure that your secrets are long and difficult to guess, and change them regularly.
 
 
+## Credits
+
+- Icons from [svgrepo.com](https://www.svgrepo.com)
+
 ## License
 
 - MIT license
