@@ -6,7 +6,8 @@ Temporary shared folders.
 
 Alice, Bob, and Carol spent the week-end together.
 
-1. Alice creates a new *Besace* folder, and gets a link https://mybesace.com/#ossa-teneas-doctum
+1. Alice creates a new *Besace* folder, by visiting the password-protected homepage
+2. She is redirected and gets a link (eg. https://mybesace.com/#ossa-teneas-doctum)
 2. Alice shares the link with her friends on a group chat
 3. The page shows an extremely simple interface: to *Upload* and *Download* files
 4. Alice starts uploading her files
@@ -31,6 +32,7 @@ Alice, Bob, and Carol spent the week-end together.
 (Eventually) *Besace* could:
 
 - Have a proper UI implemented professionally
+- Have thumbnails for pictures
 - Have a configurable maximum size per folder
 - Have state (eg. get only content that changed since last download, exclude your own files, etc.)
 - Send notifications (eg. when new content is uploaded, folder about to expire, ...)
@@ -44,7 +46,7 @@ Alice, Bob, and Carol spent the week-end together.
 
 ### WhatsApp, Telegram
 
-- Loss of quality (1600 pixels)
+- Loss of quality (1600 pixels) when not using *HD* option
 - No bulk download of files
 - Files hosted in GAFAM cloud
 
@@ -74,7 +76,7 @@ Alice, Bob, and Carol spent the week-end together.
 
 ## Besace's Architecture
 
-* Static Web pages
+* Static Web page
 * No database, file storage is source of truth
 * Folder names are just random words that can't be guessed easily
 * https://tus.io/ for resumable file uploads
