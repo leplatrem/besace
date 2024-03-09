@@ -153,6 +153,7 @@ window.addEventListener("load", async (e) => {
       height: document.getElementById("uppy").offsetHeight - 30,
       width: document.getElementById("uppy").offsetWidth,
       note: uppyNote,
+      disableThumbnailGenerator: true,
       locale: {
         strings: {
           browseFiles: "upload files",
