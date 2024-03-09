@@ -72,10 +72,10 @@ body {
   align-items: end;
 }
 
-  #toolbar button {
+  #toolbar button, .uppy-Dashboard-AddFiles-title button {
     all: initial;
     font-family: inherit;
-    
+
     width: auto;
     min-height: 40px;
     background-color: #a1afa0;
@@ -96,10 +96,12 @@ body {
     }
 
 
-  #toolbar button:not(:disabled):hover {
+  #toolbar button:not(:disabled):hover,
+  .uppy-Dashboard-AddFiles-title button:not(:disabled):hover {
     background-color: #189c38;
   }
-  #toolbar button:not(:disabled) {
+  #toolbar button:not(:disabled),
+  .uppy-Dashboard-AddFiles-title button:not(:disabled) {
     cursor: pointer;
     background-color: #1bb240;
   }
