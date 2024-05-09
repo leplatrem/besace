@@ -99,6 +99,9 @@ body {
     display: inline-flex;
     align-items: center;
     text-transform: capitalize;
+    /* Copy attributes from toolbar */
+    font-weight: 500;
+    font-family: system-ui, Roboto, Helvetica, Arial, sans-serif;
   }
 
   .uppy-Dashboard-AddFiles-title button:before {
