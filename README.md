@@ -151,6 +151,11 @@ sequenceDiagram
 Keep it fun.
 
 
+Frontend:
+
+- disable browser cache in Dev Tools
+
+
 ## Run locally
 
 ```

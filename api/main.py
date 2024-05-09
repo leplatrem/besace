@@ -1,14 +1,17 @@
 import asyncio
 import datetime
 import functools
+import json
 import os
 import random
 import shutil
 import tempfile
+import time
 import zipfile
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Security
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 
@@ -35,7 +38,7 @@ async def check_api_secret(
         secret = None
     if secret in CREATE_SECRETS:
         print(f"Using secret '{secret[:LOG_SECRET_REVEAL_LENGTH]}..'")
-        return api_key_header
+        return secret
     # Let's slow down retries here...
     await asyncio.sleep(INVALID_SECRET_WAIT_SECONDS)
     raise HTTPException(
@@ -52,10 +55,23 @@ def startup_check():
     testfile.close()
 
 
+def get_folder_metadata(folder_id):
+    metadata_file = os.path.join(ROOT_FOLDER, f"{folder_id}.meta")
+    if not os.path.exists(metadata_file):
+        # Fallback if folder was created with old Besace versions.
+        folder = os.path.join(ROOT_FOLDER, folder_id)
+        return {
+            "created": os.path.getmtime(folder),
+        }
+    with open(metadata_file) as f:
+        metadata = json.load(f)
+    return metadata
+
+
 def purge_old_folders():
     now = datetime.datetime.today()
     folders = [
-        (f, os.path.getmtime(os.path.join(ROOT_FOLDER, f)))
+        (f, get_folder_metadata(f)["created"])
         for f in os.listdir(ROOT_FOLDER)
         if os.path.isdir(os.path.join(ROOT_FOLDER, f))
     ]
@@ -107,8 +123,9 @@ def read_root(request: Request):
 @app.post("/folder")
 def create_folder(
     request: Request,
+    user_agent: Annotated[str | None, Header()],
     dictionnary: list[str] = Depends(load_dictionnary),
-    _secret: str = Security(check_api_secret),
+    secret: str = Security(check_api_secret),
 ):
     purge_old_folders()
 
@@ -120,6 +137,15 @@ def create_folder(
             break
 
     os.makedirs(folder_dir, exist_ok=True)
+    metadata = {
+        "created": int(time.time()),
+        "host": request.client.host,
+        "user-agent": user_agent,
+        "secret": f"{secret[:LOG_SECRET_REVEAL_LENGTH]}...",
+    }
+    with open(os.path.join(ROOT_FOLDER, f"{folder_id}.meta"), "w") as f:
+        json.dump(metadata, f)
+
     print(f"Created new folder {folder_dir!r}")
     redirect_url = request.url_for("get_folder", **{"folder_id": str(folder_id)})
     return RedirectResponse(redirect_url, status_code=303)
@@ -130,6 +156,7 @@ def get_folder(folder_id: str):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
+
     filepaths = [(os.path.join(folder_dir, f), f) for f in os.listdir(folder_dir)]
     files = [
         {"filename": f, "size": os.path.getsize(fp), "modified": os.path.getmtime(fp)}
@@ -137,12 +164,12 @@ def get_folder(folder_id: str):
         if os.path.isfile(fp)
     ]
     return {
+        **get_folder_metadata(folder_id),
         "folder": folder_id,
         "files": sorted(files, key=lambda v: v["modified"], reverse=True),
-        "created": os.path.getmtime(folder_dir),
         "settings": {
             "retention_days": RETENTION_DAYS,
-        }
+        },
     }
 
 
@@ -182,6 +209,11 @@ def delete_folder(folder_id: str, _secret: str = Security(check_api_secret)):
         os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.md5"))
     except FileNotFoundError:
         # No file added to the folder (md5 happens in hook).
+        pass
+    try:
+        os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.meta"))
+    except FileNotFoundError:
+        # Folder was created with older version.
         pass
     print(f"Deleted folder {folder_dir!r}")
     return {}
