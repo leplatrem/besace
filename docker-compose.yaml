@@ -12,8 +12,8 @@ services:
       - BESACE_ROOT_FOLDER=/srv/tusd-data/besace
     volumes:
       - ./hooks:/srv/tusd-hooks:ro
-      - tusd-data:/srv/tusd-data/incoming:rw
-      - root-folder:/srv/tusd-data/besace:rw
+      - ./tusd-data:/srv/tusd-data/incoming:rw
+      - ./root-folder:/srv/tusd-data/besace:rw
     command: -hooks-dir /srv/tusd-hooks -base-path /tusd/ -upload-dir /srv/tusd-data/incoming -behind-proxy -hooks-enabled-events "pre-create,post-finish" -max-size 1000000000
     expose:
       - "8080"
@@ -43,7 +43,7 @@ services:
       - BESACE_CREATE_SECRETS=${BESACE_CREATE_SECRETS:-s2cr2t,s3cr3t}
     volumes:
       - ./api:/app:rw
-      - root-folder:/mnt/uploads:rw
+      - ./root-folder:/mnt/uploads:rw
     expose:
       - "8000"
     ports:
@@ -61,8 +61,3 @@ services:
       - ./html:/var/www:ro
     ports:
       - 127.0.0.1:${BESACE_HTTP_PORT:-8080}:80
-
-volumes:
-  tusd-data:
-  root-folder:
-  hooks:
