@@ -3,7 +3,7 @@ import {
   ImageEditor,
   Tus,
   Uppy,
-} from "./vendored/uppy-v3.17.0.min.mjs";
+} from "./vendored/uppy-v3.25.2.min.mjs";
 dayjs.extend(dayjs_plugin_relativeTime);
 
 function humanFileSize(size) {
