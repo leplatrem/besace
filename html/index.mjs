@@ -102,13 +102,20 @@ window.addEventListener("load", async (e) => {
       details.files.length > 1 ? "s" : ""
     }</h3>`;
     for (const day of filesByDay.keys()) {
-      content += `<p>Uploaded on ${day}</p><ul>`;
+      content += `
+      <p>Uploaded on ${day}</p>
+      <div class="gallery">`;
       for (const file of filesByDay.get(day)) {
-        content += `<li class="filelist">${
-          file.filename
-        } <span class="size">(${humanFileSize(file.size)})</span></li>`;
+        content += `
+        <div class="thumbnail">
+          <img src="/thumbnails/${details.folder}/${file.filename}.jpg"/>
+          <div class="info">
+            <p class="filename">${file.filename}</p>
+            <p class="filesize">(${humanFileSize(file.size)})</p>
+          </div>
+        </div>`;
       }
-      content += "</ul>";
+      content += "</div>";
     }
     const modal = new tingle.modal();
     modal.setContent(content);
