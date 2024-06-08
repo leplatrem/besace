@@ -122,6 +122,16 @@ window.addEventListener("load", async (e) => {
     const modal = new tingle.modal();
     modal.setContent(content);
     modal.open();
+
+    // Reload thumbnails if they are beeing created.
+    Array.from(document.querySelectorAll(".gallery img"))
+      .map((elt) => {
+        elt.addEventListener("error", () => {
+          setTimeout(() => {
+            elt.src = elt.src;
+          }, 1000);
+        });
+      });
   });
 
   if (details.files.length) {
