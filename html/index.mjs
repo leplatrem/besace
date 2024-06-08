@@ -108,7 +108,9 @@ window.addEventListener("load", async (e) => {
       for (const file of filesByDay.get(day)) {
         content += `
         <div class="thumbnail">
-          <img src="/thumbnails/${details.folder}/${file.filename}.jpg"/>
+          <a href="/api/file/${details.folder}/${file.filename}">
+            <img src="/thumbnails/${details.folder}/${file.filename}.jpg"/>
+          </a>
           <div class="info">
             <p class="filename">${file.filename}</p>
             <p class="filesize">(${humanFileSize(file.size)})</p>

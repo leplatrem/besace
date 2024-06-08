@@ -217,3 +217,11 @@ def delete_folder(folder_id: str, _secret: str = Security(check_api_secret)):
         pass
     print(f"Deleted folder {folder_dir!r}")
     return {}
+
+
+@app.get("/file/{folder_id}/{file_name}")
+def fetch_file(folder_id: str, file_name: str):
+    folder_dir = os.path.join(ROOT_FOLDER, folder_id)
+    file = os.path.join(folder_dir, file_name)
+    headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
+    return FileResponse(file, headers=headers)
