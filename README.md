@@ -15,7 +15,7 @@ Alice, Bob, and Carol spent the week-end together.
 6. Anyone can download the content of the folder during 7 days, before it gets deleted forever
 
 
-## Goals
+## Goals and Features
 
 - No authentication
 - Avoid sharing pictures and videos on chat applications
@@ -25,6 +25,7 @@ Alice, Bob, and Carol spent the week-end together.
 - Self-hostable
 - Detect duplicate files
 - Protect creation of new folders with a master password (eg. maintain usage trustworthy)
+- Thumbnails and single file download
 
 
 ## Ideas for the Future
@@ -32,7 +33,6 @@ Alice, Bob, and Carol spent the week-end together.
 (Eventually) *Besace* could:
 
 - Have a proper UI implemented professionally
-- Have thumbnails for pictures
 - Have a configurable maximum size per folder
 - Have state (eg. get only content that changed since last download, exclude your own files, etc.)
 - Send notifications (eg. when new content is uploaded, folder about to expire, ...)
