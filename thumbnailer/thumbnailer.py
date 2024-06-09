@@ -35,6 +35,17 @@ def create_thumbnail(
         frame = clip.get_frame(frame_time)
         img = Image.fromarray(frame)
         img.thumbnail(size, **thumbnail_args)
+        # Show duration in thumbnail
+        hours, remainder = divmod(clip.duration, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        draw = ImageDraw.Draw(img)
+        for position, color in [((6, 4), (0, 0, 0)), ((5, 3), (255, 255, 255))]:
+            draw.text(
+                position,
+                f"▶ {int(hours):02}:{int(minutes):02}:{int(seconds):02}",
+                color,
+                font=ImageFont.truetype(FONT_FILE, 16),
+            )
         img.save(output_path)
     elif input_path.lower().endswith(".pdf"):
         # Handle PDF input
