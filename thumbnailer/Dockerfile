@@ -14,6 +14,8 @@ RUN python3 -m venv $POETRY_HOME && \
 # Set the working directory
 WORKDIR /app
 COPY ./thumbnailer.py ./
+COPY ./default.jpg ./
+COPY ./OpenSans-Regular.ttf ./
 COPY ./poetry.lock ./pyproject.toml ./
 RUN $POETRY_HOME/bin/poetry install --no-dev --no-root
 

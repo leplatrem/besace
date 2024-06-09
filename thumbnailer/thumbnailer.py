@@ -4,7 +4,7 @@ import os
 import shutil
 import time
 
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
 from moviepy.editor import VideoFileClip
 from pillow_heif import register_heif_opener
 import fitz  # PyMuPDF
@@ -14,7 +14,9 @@ from watchdog.events import FileSystemEventHandler
 
 BESACE_FOLDER_PATTERN = re.compile(r"^([a-zA-Z]+-)+\w[a-zA-Z]+$")
 FILE_COMPLETE_WAIT_SECONDS = 1
-DEFAULT_THUMBNAIL = os.path.join(os.path.dirname(__file__), "default.png")
+HERE = os.path.dirname(__file__)
+DEFAULT_THUMBNAIL = os.path.join(HERE, "default.jpg")
+FONT_FILE = os.path.join(HERE, "DejaVuSansCondensed-Bold.ttf")
 
 
 def create_thumbnail(
@@ -44,7 +46,13 @@ def create_thumbnail(
         img.save(output_path)
     else:
         print(f"Unsupported file format: {input_path}")
-        shutil.copy(DEFAULT_THUMBNAIL, output_path)
+        # Show extension in thumbnail
+        _, ext = os.path.splitext(input_path)
+        with Image.open(DEFAULT_THUMBNAIL) as img:
+            draw = ImageDraw.Draw(img)
+            font = ImageFont.truetype(FONT_FILE, 22)
+            draw.text((33, 33), ext, (105, 115, 125), font=font)
+            img.save(output_path)
 
     print(f"Thumbnail saved as {output_path}")
 
