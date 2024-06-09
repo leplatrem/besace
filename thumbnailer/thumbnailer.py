@@ -24,8 +24,9 @@ def create_thumbnail(
     if input_path.lower().endswith((".heic", ".png", ".jpg", ".jpeg", ".bmp", ".gif")):
         # Handle image input
         with Image.open(input_path) as img:
-            img.thumbnail(size, **thumbnail_args)
-            img.save(output_path)
+            img_rgb = img.convert("RGB")
+            img_rgb.thumbnail(size, **thumbnail_args)
+            img_rgb.save(output_path)
     elif input_path.lower().endswith((".mp4", ".avi", ".mov", ".mkv")):
         # Handle video input
         clip = VideoFileClip(input_path)
