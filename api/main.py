@@ -10,15 +10,16 @@ import tempfile
 import time
 import zipfile
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security, Path
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security, Path as FastAPIPath
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from pydantic import AfterValidator
 
-
-ROOT_FOLDER = os.path.abspath(os.getenv("BESACE_ROOT_FOLDER", "."))
+HERE = here = Path(__file__).parent
+ROOT_FOLDER = Path(os.getenv("BESACE_ROOT_FOLDER", "."))
 RETENTION_DAYS = int(os.getenv("BESACE_RETENTION_DAYS", "7"))
 CREATE_SECRETS = os.getenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t").split(",")
 FOLDER_WORDS_MIN_LENGTH = 3
@@ -57,7 +58,7 @@ def check_folder_id(folder_id: str) -> str:
     return folder_id
 
 
-FolderId = Annotated[str, AfterValidator(check_folder_id), Path(title="Folder ID")]
+FolderId = Annotated[str, AfterValidator(check_folder_id), FastAPIPath(title="Folder ID")]
 
 
 def check_filename(filename: str) -> str:
@@ -65,24 +66,24 @@ def check_filename(filename: str) -> str:
     return filename
 
 
-Filename = Annotated[str, AfterValidator(check_filename), Path(title="File name")]
+Filename = Annotated[str, AfterValidator(check_filename), FastAPIPath(title="File name")]
 
 
 def startup_check():
     print(f"Using {ROOT_FOLDER!r} as root folder")
     # Test that root is writable.
-    os.makedirs(ROOT_FOLDER, exist_ok=True)
+    ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
     testfile = tempfile.TemporaryFile(dir=ROOT_FOLDER)
     testfile.close()
 
 
 def get_folder_metadata(folder_id):
-    metadata_file = os.path.join(ROOT_FOLDER, f"{folder_id}.meta")
-    if not os.path.exists(metadata_file):
+    metadata_file = ROOT_FOLDER / f"{folder_id}.meta"
+    if not metadata_file.exists():
         # Fallback if folder was created with old Besace versions.
-        folder = os.path.join(ROOT_FOLDER, folder_id)
+        folder = ROOT_FOLDER / folder_id
         return {
-            "created": os.path.getmtime(folder),
+            "created": folder.stat().st_mtime,
         }
     with open(metadata_file) as f:
         metadata = json.load(f)
@@ -92,9 +93,9 @@ def get_folder_metadata(folder_id):
 def purge_old_folders():
     now = datetime.datetime.today()
     folders = [
-        (f, get_folder_metadata(f)["created"])
-        for f in os.listdir(ROOT_FOLDER)
-        if os.path.isdir(os.path.join(ROOT_FOLDER, f))
+        (path.name, get_folder_metadata(path.name)["created"])
+        for path in ROOT_FOLDER.iterdir()
+        if path.isdir()
     ]
     print(f"{len(folders)} folders in {ROOT_FOLDER}")
     for folder, timestamp in folders:
@@ -106,8 +107,7 @@ def purge_old_folders():
 
 @functools.cache
 def load_dictionnary():
-    here = os.path.dirname(os.path.abspath(__file__))
-    dictionary_path = os.path.join(here, "dictionnary.txt")
+    dictionary_path = HERE / "dictionnary.txt"
     with open(dictionary_path) as f:
         words = f.read().splitlines()
     selection = [
@@ -153,18 +153,18 @@ def create_folder(
     while "new folder does not exist":
         words = random.sample(dictionnary, FOLDER_WORDS_COUNT)
         folder_id = "-".join(words)
-        folder_dir = os.path.join(ROOT_FOLDER, folder_id)
-        if not os.path.exists(folder_dir):
+        folder_dir = ROOT_FOLDER / folder_id
+        if not folder_dir.exists():
             break
 
-    os.makedirs(folder_dir, exist_ok=True)
+    folder_dir.mkdir(exist_ok=True)
     metadata = {
         "created": int(time.time()),
         "host": request.client.host,
         "user-agent": user_agent,
         "secret": f"{secret[:LOG_SECRET_REVEAL_LENGTH]}...",
     }
-    with open(os.path.join(ROOT_FOLDER, f"{folder_id}.meta"), "w") as f:
+    with open(ROOT_FOLDER / f"{folder_id}.meta", "w") as f:
         json.dump(metadata, f)
 
     print(f"Created new folder {folder_dir!r}")
@@ -174,15 +174,18 @@ def create_folder(
 
 @app.get("/folder/{folder_id}")
 def get_folder(folder_id: FolderId):
-    folder_dir = os.path.join(ROOT_FOLDER, folder_id)
-    if not os.path.exists(folder_dir):
+    folder_dir = ROOT_FOLDER / folder_id
+    if not folder_dir.exists():
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
 
-    filepaths = [(os.path.join(folder_dir, f), f) for f in os.listdir(folder_dir)]
     files = [
-        {"filename": f, "size": os.path.getsize(fp), "modified": os.path.getmtime(fp)}
-        for fp, f in filepaths
-        if os.path.isfile(fp)
+        {
+            "filename": path.name,
+            "size": path.stat().st_size,
+            "modified": path.stat().st_mtime,
+        }
+        for path in folder_dir.iterdir()
+        if path.is_file()
     ]
     return {
         **get_folder_metadata(folder_id),
@@ -196,43 +199,43 @@ def get_folder(folder_id: FolderId):
 
 @app.get("/folder/{folder_id}/download")
 def get_folder_archive(folder_id: FolderId):
-    folder_dir = os.path.join(ROOT_FOLDER, folder_id)
-    if not os.path.exists(folder_dir):
+    folder_dir = ROOT_FOLDER / folder_id
+    if not folder_dir.exists():
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
 
-    filenames = [
-        f for f in os.listdir(folder_dir) if os.path.isfile(os.path.join(folder_dir, f))
-    ]
-    folder_archive = os.path.join(ROOT_FOLDER, f"{folder_id}.zip")
+    filenames = [path.name for path in folder_dir.iterdir() if path.is_file()]
+    folder_archive = ROOT_FOLDER / f"{folder_id}.zip"
     print(f"Updating archive {folder_archive!r}")
     with zipfile.ZipFile(folder_archive, "a") as archive:
         existing = archive.namelist()
         for filename in filenames:
             if filename not in existing:
-                archive.write(os.path.join(folder_dir, filename), filename)
+                archive.write(folder_dir / filename, filename)
 
     headers = {"Content-Disposition": f'attachment; filename="{folder_id}.zip"'}
     return FileResponse(folder_archive, headers=headers)
 
 
 @app.delete("/folder/{folder_id}")
-def delete_folder(folder_id: FolderId, _secret: str = Security(check_api_secret)):
-    folder_dir = os.path.join(ROOT_FOLDER, folder_id)
+def delete_folder(
+    folder_id: FolderId, _secret: str = Security(check_api_secret)
+):
+    folder_dir = ROOT_FOLDER / folder_id
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
     shutil.rmtree(folder_dir)
     try:
-        os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.zip"))
+        os.remove(ROOT_FOLDER / f"{folder_id}.zip")
     except FileNotFoundError:
         # Archive was never requested.
         pass
     try:
-        os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.md5"))
+        os.remove(ROOT_FOLDER / f"{folder_id}.md5")
     except FileNotFoundError:
         # No file added to the folder (md5 happens in hook).
         pass
     try:
-        os.remove(os.path.join(ROOT_FOLDER, f"{folder_id}.meta"))
+        os.remove(ROOT_FOLDER / f"{folder_id}.meta")
     except FileNotFoundError:
         # Folder was created with older version.
         pass
@@ -242,7 +245,7 @@ def delete_folder(folder_id: FolderId, _secret: str = Security(check_api_secret)
 
 @app.get("/file/{folder_id}/{file_name}")
 def fetch_file(folder_id: FolderId, file_name: Filename):
-    folder_dir = os.path.join(ROOT_FOLDER, folder_id)
-    file = os.path.join(folder_dir, file_name)
+    folder_dir = ROOT_FOLDER / folder_id
+    file = folder_dir / file_name
     headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
     return FileResponse(file, headers=headers)
