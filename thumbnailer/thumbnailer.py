@@ -17,11 +17,33 @@ FILE_COMPLETE_WAIT_SECONDS = 1
 HERE = os.path.dirname(__file__)
 DEFAULT_THUMBNAIL = os.path.join(HERE, "default.jpg")
 FONT_FILE = os.path.join(HERE, "DejaVuSansCondensed-Bold.ttf")
+SYNC_ON_START = os.getenv("SYNC_ON_START", "f") in "1yY"
 
 
+def fail_safe(func):
+    def inner_function(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as exc:
+            print(
+                f"{func.__name__}("
+                + ", ".join(
+                    list(str(a) for a in args)
+                    + list(f"{k}={v}" for k, v in kwargs.items())
+                )
+                + ")",
+                exc,
+            )
+
+    return inner_function
+
+
+@fail_safe
 def create_thumbnail(
     input_path: str, output_path: str, size: tuple[int], frame_time=float
 ):
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
     thumbnail_args = dict(resample=Image.Resampling.NEAREST)
     if input_path.lower().endswith((".heic", ".png", ".jpg", ".jpeg", ".bmp", ".gif")):
         # Handle image input
@@ -131,17 +153,13 @@ class WatchHandler(FileSystemEventHandler):
                     break
             # Now create the thumbnail.
             print(f"New file created: {event.src_path}")
-            os.makedirs(os.path.join(self.output_path, folder_name), exist_ok=True)
             output_path = os.path.join(self.output_path, folder_name, file_name)
-            try:
-                create_thumbnail(
-                    event.src_path,
-                    f"{output_path}{self.extension}",
-                    self.size,
-                    self.frame_time,
-                )
-            except Exception as exc:
-                print(f"Failed to create thumbnail for {event.src_path}", exc)
+            create_thumbnail(
+                event.src_path,
+                f"{output_path}{self.extension}",
+                self.size,
+                self.frame_time,
+            )
 
     def on_deleted(self, event):
         """
@@ -167,8 +185,22 @@ def main():
     args = parse_arguments()
     size = (args.width, args.height)
 
+    if SYNC_ON_START:
+        print("Sync on startup...")
+        for root, dirs, files in os.walk(args.input):
+            for file_name in files:
+                folder_name = os.path.basename(root)  # Get the folder name
+                if not BESACE_FOLDER_PATTERN.match(folder_name):
+                    continue
+                input_path = os.path.join(root, file_name)
+                output_path = os.path.join(args.output, folder_name, file_name) + args.extension
+                if os.path.exists(output_path):
+                    continue
+                create_thumbnail(input_path, output_path, size, args.frame_time)
+
     print(f"Watching {args.input}, thumbnails in {args.output}")
     observer = Observer()
+
     event_handler = WatchHandler(args.output, size, args.frame_time, args.extension)
     observer.schedule(event_handler, args.input, recursive=True)
     observer.start()
