@@ -133,12 +133,15 @@ class WatchHandler(FileSystemEventHandler):
             print(f"New file created: {event.src_path}")
             os.makedirs(os.path.join(self.output_path, folder_name), exist_ok=True)
             output_path = os.path.join(self.output_path, folder_name, file_name)
-            create_thumbnail(
-                event.src_path,
-                f"{output_path}{self.extension}",
-                self.size,
-                self.frame_time,
-            )
+            try:
+                create_thumbnail(
+                    event.src_path,
+                    f"{output_path}{self.extension}",
+                    self.size,
+                    self.frame_time,
+                )
+            except Exception as exc:
+                print(f"Failed to create thumbnail for {event.src_path}", exc)
 
     def on_deleted(self, event):
         """
