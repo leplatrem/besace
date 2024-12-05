@@ -1117,8 +1117,6 @@ aequoris
 aequorum
 aequus
 aer
-aer._comm.
-aer._vulg.
 aera
 aerae
 aeram
@@ -1941,8 +1939,6 @@ antagonistarum
 antagonistas
 antagonistis
 ante
-ante_aer._comm.
-ante_aer._vulg.
 antea
 anteeo
 antefero
@@ -3129,7 +3125,6 @@ buccas
 buccis
 bunnolus
 bursa
-ca.
 caballo
 caballus
 caco
@@ -9062,8 +9057,6 @@ duplus
 dupondius
 dux
 dysprosium
-e._c.
-e._g.
 ea
 eadem
 eae
@@ -9083,7 +9076,6 @@ ebur
 eburneus
 ecclesia
 echinus
-ed.
 edam
 edamini
 edamur
@@ -10052,7 +10044,6 @@ esurum
 esurus
 et
 eta
-etc.
 etiam
 etiamsi
 etsi
@@ -10110,7 +10101,6 @@ eventuros
 eventurum
 eventurus
 ex
-ex._gr.
 excava
 excavamus
 excavant
@@ -13527,7 +13517,6 @@ kalium
 kimonum
 krypton
 l
-l._c.
 labda
 labe
 labem
@@ -14307,8 +14296,6 @@ litterae
 litus
 livermorium
 lividus
-ll._cc.
-loc._cit.
 loca
 locabam
 locabamus
@@ -17789,8 +17776,6 @@ ovorum
 ovum
 oxygenium
 p
-p.
-p._m.
 paca
 pacamus
 pacant
@@ -20520,14 +20505,12 @@ puteorum
 puteos
 putere
 puteris
-putes
 putet
 putete
 putetis
 putetur
 puteum
 puteus
-puto
 putor
 putuerunt
 putui
@@ -20537,7 +20520,7 @@ putuisti
 putuistis
 putuit
 q
-q.i.d.
+qid
 qu
 qua
 quadrageni
