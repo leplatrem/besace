@@ -15,8 +15,8 @@ from watchdog.events import FileSystemEventHandler
 BESACE_FOLDER_PATTERN = re.compile(r"^([a-zA-Z]+-)+\w[a-zA-Z]+$")
 FILE_COMPLETE_WAIT_SECONDS = 1
 HERE = os.path.dirname(__file__)
-DEFAULT_THUMBNAIL = os.path.join(HERE, "default.jpg")
-FONT_FILE = os.path.join(HERE, "DejaVuSansCondensed-Bold.ttf")
+DEFAULT_THUMBNAIL = os.path.join(HERE, "assets", "default.jpg")
+FONT_FILE = os.path.join(HERE, "assets", "DejaVuSansCondensed-Bold.ttf")
 SYNC_ON_START = os.getenv("SYNC_ON_START", "f") in "1yY"
 
 
