@@ -109,7 +109,9 @@ window.addEventListener("load", async (e) => {
         content += `
         <div class="thumbnail">
           <a href="/api/file/${details.folder}/${file.filename}">
-            <img src="/thumbnails/${details.folder}/${file.filename}.jpg"/>
+            <img src="/thumbnails/${details.folder}/${file.filename}.jpg"
+             loading="lazy"
+             style="min-height: 90px"/>
           </a>
           <div class="info">
             <p class="filename">${file.filename}</p>
@@ -121,6 +123,7 @@ window.addEventListener("load", async (e) => {
     }
     const modal = new tingle.modal();
     modal.setContent(content);
+    modal.checkOverflow();
     modal.open();
 
     // Reload thumbnails if they are beeing created.
