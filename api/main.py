@@ -14,6 +14,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
+from pydantic import AfterValidator
 
 
 ROOT_FOLDER = os.path.abspath(os.getenv("BESACE_ROOT_FOLDER", "."))
@@ -22,6 +23,7 @@ CREATE_SECRETS = os.getenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t").split(",")
 FOLDER_WORDS_MIN_LENGTH = 3
 FOLDER_WORDS_MAX_LENGTH = 6
 FOLDER_WORDS_COUNT = 3
+BESACE_FOLDER_PATTERN = re.compile(f"^([a-zA-Z]+-){FOLDER_WORDS_COUNT - 1}[a-zA-Z]+$")
 LOG_SECRET_REVEAL_LENGTH = int(os.getenv("LOG_SECRET_REVEAL_LENGTH", "3"))
 INVALID_SECRET_WAIT_SECONDS = int(os.getenv("INVALID_SECRET_WAIT_SECONDS", "2"))
 
@@ -45,6 +47,22 @@ async def check_api_secret(
         status_code=401,
         detail="Invalid or missing API Secret",
     )
+
+
+def check_folder_id(folder_id: str) -> str:
+    assert BESACE_FOLDER_PATTERN.match(folder_id), f"{folder_id} has bad format"
+    return folder_id
+
+
+FolderIdValidator = Path(annotation=Annotated[str, AfterValidator(check_folder_id)])
+
+
+def check_filename(filename: str) -> str:
+    assert re.match(r'^[^<>:;?"*|/]+$', filename), f"{filename} has bad format"
+    return filename
+
+
+FilenameValidator = Path(annotation=Annotated[str, AfterValidator(check_filename)])
 
 
 def startup_check():
@@ -152,7 +170,7 @@ def create_folder(
 
 
 @app.get("/folder/{folder_id}")
-def get_folder(folder_id: str):
+def get_folder(folder_id: str = FolderIdValidator):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
@@ -174,7 +192,7 @@ def get_folder(folder_id: str):
 
 
 @app.get("/folder/{folder_id}/download")
-def get_folder_archive(folder_id: str):
+def get_folder_archive(folder_id: str = FolderIdValidator):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
@@ -195,7 +213,7 @@ def get_folder_archive(folder_id: str):
 
 
 @app.delete("/folder/{folder_id}")
-def delete_folder(folder_id: str, _secret: str = Security(check_api_secret)):
+def delete_folder(folder_id: str = FolderIdValidator, _secret: str = Security(check_api_secret)):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
@@ -220,7 +238,7 @@ def delete_folder(folder_id: str, _secret: str = Security(check_api_secret)):
 
 
 @app.get("/file/{folder_id}/{file_name}")
-def fetch_file(folder_id: str, file_name: str):
+def fetch_file(folder_id: str = FolderIdValidator, file_name: str = FilenameValidator):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     file = os.path.join(folder_dir, file_name)
     headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}
