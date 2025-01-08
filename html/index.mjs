@@ -94,7 +94,7 @@ window.addEventListener("load", async (e) => {
     const groups = new Map();
     let currentGroup;
     for (const file of details.files) {
-      if (!currentGroup || (file.modified - currentGroup) > minimumIntervalSeconds) {
+      if (!currentGroup || (currentGroup - file.modified) > minimumIntervalSeconds) {
         currentGroup = file.modified;
         groups.set(currentGroup, [file]);
       } else {
