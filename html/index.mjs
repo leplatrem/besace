@@ -89,23 +89,28 @@ window.addEventListener("load", async (e) => {
   const btnPreview = document.getElementById("preview");
   btnPreview.disabled = !details.files.length;
   btnPreview.addEventListener("click", (e) => {
-    const filesByDay = details.files.reduce((acc, file) => {
-      const day = new Date(file.modified * 1000).toDateString();
-      if (!acc.has(day)) {
-        acc.set(day, []);
+    // Group by upload
+    const minimumIntervalSeconds = 3600 * 3; // 3H between groups.
+    const groups = new Map();
+    let currentGroup;
+    for (const file of details.files) {
+      if (!currentGroup || (file.modified - currentGroup) > minimumIntervalSeconds) {
+        currentGroup = file.modified;
+        groups.set(currentGroup, [file]);
+      } else {
+        groups.get(currentGroup).push(file);
       }
-      acc.get(day).push(file);
-      return acc;
-    }, new Map());
+    }
 
     let content = `<h3>List of ${details.files.length} file${
       details.files.length > 1 ? "s" : ""
     }</h3>`;
-    for (const day of filesByDay.keys()) {
+    for (const timestamp of groups.keys()) {
+      const day = new Date(timestamp * 1000).toLocaleString();
       content += `
       <p>Uploaded on ${day}</p>
       <div class="gallery">`;
-      for (const file of filesByDay.get(day)) {
+      for (const file of groups.get(timestamp)) {
         content += `
         <div class="thumbnail">
           <a href="/api/file/${details.folder}/${file.filename}">
