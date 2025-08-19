@@ -1,20 +1,26 @@
-[tool.poetry]
+[project]
+authors = [
+    {name = "Mathieu Leplatre", email = "mathieu@leplat.re"},
+]
+requires-python = "<4.0,>=3.11"
+dependencies = [
+    "inotify-simple<2.0.0,>=1.3.5",
+    "watchdog<5.0.0,>=4.0.1",
+    "pillow<11.0.0,>=10.3.0",
+    "moviepy<2.0.0,>=1.0.3",
+    "ffmpeg-python<1.0.0,>=0.2.0",
+    "pymupdf<2.0.0,>=1.24.5",
+    "pillow-heif<1.0.0,>=0.16.0",
+]
 name = "thumbnailer"
 version = "0.1.0"
 description = ""
-authors = ["Mathieu Leplatre <mathieu@leplat.re>"]
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-inotify-simple = "^1.3.5"
-watchdog = "^4.0.1"
-pillow = "^10.3.0"
-moviepy = "^1.0.3"
-ffmpeg-python = "^0.2.0"
-pymupdf = "^1.24.5"
-pillow-heif = "^0.16.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "numpy>=2.3.2",
+    "pytest>=8.4.1",
+    "pytest-coverage>=0.0",
+    "ruff>=0.12.9",
+]

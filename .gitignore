@@ -1,2 +1,6 @@
 __pycache__
 volumes/
+.coverage
+.ruff_cache
+.pytest_cache
+.venv

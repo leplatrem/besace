@@ -12,7 +12,10 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
-BESACE_FOLDER_PATTERN = re.compile(r"^([a-zA-Z]+-)+\w[a-zA-Z]+$")
+FOLDER_WORDS_COUNT = 3
+BESACE_FOLDER_PATTERN = re.compile(
+    f"^([a-zA-Z]+-){{{FOLDER_WORDS_COUNT - 1}}}[a-zA-Z]+$"
+)
 FILE_COMPLETE_WAIT_SECONDS = 1
 HERE = os.path.dirname(__file__)
 DEFAULT_THUMBNAIL = os.path.join(HERE, "assets", "default.jpg")
@@ -81,11 +84,13 @@ def create_thumbnail(
         print(f"Unsupported file format: {input_path}")
         # Show extension in thumbnail
         _, ext = os.path.splitext(input_path)
-        with Image.open(DEFAULT_THUMBNAIL) as img:
-            draw = ImageDraw.Draw(img)
-            font = ImageFont.truetype(FONT_FILE, 22)
-            draw.text((33, 33), ext, (105, 115, 125), font=font)
-            img.save(output_path)
+        with Image.open(DEFAULT_THUMBNAIL) as base:
+            # Make a writable, consistent-mode image (avoids read-only/lazy issues)
+            img = base.convert("RGB").copy()
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype(FONT_FILE, 22)
+        draw.text((33, 33), ext, (105, 115, 125), font=font)
+        img.save(output_path)
 
     print(f"Thumbnail saved as {output_path}")
 
@@ -193,7 +198,9 @@ def main():
                 if not BESACE_FOLDER_PATTERN.match(folder_name):
                     continue
                 input_path = os.path.join(root, file_name)
-                output_path = os.path.join(args.output, folder_name, file_name) + args.extension
+                output_path = (
+                    os.path.join(args.output, folder_name, file_name) + args.extension
+                )
                 if os.path.exists(output_path):
                     continue
                 create_thumbnail(input_path, output_path, size, args.frame_time)
