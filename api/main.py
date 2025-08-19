@@ -107,7 +107,7 @@ def purge_old_folders():
     folders = [
         (path.name, get_folder_metadata(path.name)["created"])
         for path in ROOT_FOLDER.iterdir()
-        if path.isdir()
+        if path.is_dir()
     ]
     print(f"{len(folders)} folders in {ROOT_FOLDER}")
     for folder, timestamp in folders:

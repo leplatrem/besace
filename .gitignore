@@ -4,3 +4,5 @@ volumes/
 .ruff_cache
 .pytest_cache
 .venv
+node_modules/
+test-results/

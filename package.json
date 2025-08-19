@@ -1,0 +1,14 @@
+{
+  "name": "besace",
+  "version": "0.0.0",
+  "directories": {
+    "test": "browser-tests"
+  },
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^24.3.0"
+  }
+}
