@@ -13,7 +13,15 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security, Path as FastAPIPath
+from fastapi import (
+    Depends,
+    FastAPI,
+    Header,
+    HTTPException,
+    Request,
+    Security,
+    Path as FastAPIPath,
+)
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from pydantic import AfterValidator
@@ -58,7 +66,9 @@ def check_folder_id(folder_id: str) -> str:
     return folder_id
 
 
-FolderId = Annotated[str, AfterValidator(check_folder_id), FastAPIPath(title="Folder ID")]
+FolderId = Annotated[
+    str, AfterValidator(check_folder_id), FastAPIPath(title="Folder ID")
+]
 
 
 def check_filename(filename: str) -> str:
@@ -66,7 +76,9 @@ def check_filename(filename: str) -> str:
     return filename
 
 
-Filename = Annotated[str, AfterValidator(check_filename), FastAPIPath(title="File name")]
+Filename = Annotated[
+    str, AfterValidator(check_filename), FastAPIPath(title="File name")
+]
 
 
 def startup_check():
@@ -217,9 +229,7 @@ def get_folder_archive(folder_id: FolderId):
 
 
 @app.delete("/folder/{folder_id}")
-def delete_folder(
-    folder_id: FolderId, _secret: str = Security(check_api_secret)
-):
+def delete_folder(folder_id: FolderId, _secret: str = Security(check_api_secret)):
     folder_dir = ROOT_FOLDER / folder_id
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
