@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: [api, thumbnailer]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+
+    - name: Install uv
+      run: pip install uv
+
+    - name: Lint ${{ matrix.folder }}
+      working-directory: ${{ matrix.folder }}
+      run: make lint
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: [api, thumbnailer]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+
+    - name: Install uv
+      run: pip install uv
+
+    - name: Run tests ${{ matrix.folder }}
+      working-directory: ${{ matrix.folder }}
+      run: make test

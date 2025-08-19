@@ -4,6 +4,7 @@ import functools
 import json
 import os
 import random
+import re
 import shutil
 import tempfile
 import time
@@ -11,7 +12,7 @@ import zipfile
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Security, Path
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import APIKeyHeader
 from pydantic import AfterValidator
@@ -23,7 +24,9 @@ CREATE_SECRETS = os.getenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t").split(",")
 FOLDER_WORDS_MIN_LENGTH = 3
 FOLDER_WORDS_MAX_LENGTH = 6
 FOLDER_WORDS_COUNT = 3
-BESACE_FOLDER_PATTERN = re.compile(f"^([a-zA-Z]+-){FOLDER_WORDS_COUNT - 1}[a-zA-Z]+$")
+BESACE_FOLDER_PATTERN = re.compile(
+    f"^([a-zA-Z]+-){{{FOLDER_WORDS_COUNT - 1}}}[a-zA-Z]+$"
+)
 LOG_SECRET_REVEAL_LENGTH = int(os.getenv("LOG_SECRET_REVEAL_LENGTH", "3"))
 INVALID_SECRET_WAIT_SECONDS = int(os.getenv("INVALID_SECRET_WAIT_SECONDS", "2"))
 
@@ -54,7 +57,7 @@ def check_folder_id(folder_id: str) -> str:
     return folder_id
 
 
-FolderIdValidator = Path(annotation=Annotated[str, AfterValidator(check_folder_id)])
+FolderId = Annotated[str, AfterValidator(check_folder_id), Path(title="Folder ID")]
 
 
 def check_filename(filename: str) -> str:
@@ -62,7 +65,7 @@ def check_filename(filename: str) -> str:
     return filename
 
 
-FilenameValidator = Path(annotation=Annotated[str, AfterValidator(check_filename)])
+Filename = Annotated[str, AfterValidator(check_filename), Path(title="File name")]
 
 
 def startup_check():
@@ -114,7 +117,7 @@ def load_dictionnary():
     ]
     size = len(selection)
     print(
-        f"Loaded dictionary of {size} words ({size ** FOLDER_WORDS_COUNT} possibilities)."
+        f"Loaded dictionary of {size} words ({size**FOLDER_WORDS_COUNT} possibilities)."
     )
     return selection
 
@@ -170,7 +173,7 @@ def create_folder(
 
 
 @app.get("/folder/{folder_id}")
-def get_folder(folder_id: str = FolderIdValidator):
+def get_folder(folder_id: FolderId):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
@@ -192,7 +195,7 @@ def get_folder(folder_id: str = FolderIdValidator):
 
 
 @app.get("/folder/{folder_id}/download")
-def get_folder_archive(folder_id: str = FolderIdValidator):
+def get_folder_archive(folder_id: FolderId):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
@@ -213,7 +216,7 @@ def get_folder_archive(folder_id: str = FolderIdValidator):
 
 
 @app.delete("/folder/{folder_id}")
-def delete_folder(folder_id: str = FolderIdValidator, _secret: str = Security(check_api_secret)):
+def delete_folder(folder_id: FolderId, _secret: str = Security(check_api_secret)):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     if not os.path.exists(folder_dir):
         raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
@@ -238,7 +241,7 @@ def delete_folder(folder_id: str = FolderIdValidator, _secret: str = Security(ch
 
 
 @app.get("/file/{folder_id}/{file_name}")
-def fetch_file(folder_id: str = FolderIdValidator, file_name: str = FilenameValidator):
+def fetch_file(folder_id: FolderId, file_name: Filename):
     folder_dir = os.path.join(ROOT_FOLDER, folder_id)
     file = os.path.join(folder_dir, file_name)
     headers = {"Content-Disposition": f'attachment; filename="{file_name}"'}

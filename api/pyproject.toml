@@ -1,16 +1,21 @@
-[tool.poetry]
+[project]
+authors = [
+    {name = "Mathieu Leplatre", email = "mathieu@leplat.re"},
+]
+requires-python = "<4.0,>=3.11"
+dependencies = [
+    "fastapi<1.0,>=0.111",
+    "uvicorn[standard]<1.0,>=0.29",
+]
 name = "api"
 version = "0.1.0"
 description = ""
-authors = ["Mathieu Leplatre <mathieu@leplat.re>"]
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-fastapi = "^0.111"
-uvicorn = {extras = ["standard"], version = "^0.29"}
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8.4.1",
+    "pytest-coverage>=0.0",
+    "ruff>=0.12.9",
+]
