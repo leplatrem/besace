@@ -13,7 +13,7 @@ services:
       - ./hooks:/srv/tusd-hooks:ro
       - ./volumes/tusd-data:/srv/tusd-data/incoming:rw
       - ./volumes/root-folder:/srv/tusd-data/besace:rw
-    command: -hooks-dir /srv/tusd-hooks -base-path /tusd/ -upload-dir /srv/tusd-data/incoming -behind-proxy -hooks-enabled-events "pre-create,post-finish" -max-size 1000000000
+    command: -hooks-dir /srv/tusd-hooks -base-path /tusd/ -upload-dir /srv/tusd-data/incoming -behind-proxy -hooks-enabled-events "pre-create,post-finish" -max-size 1000000000 -show-greeting false -host 127.0.0.1
     expose:
       - "8080"
     ports:
@@ -58,6 +58,7 @@ services:
     environment:
       - BESACE_ROOT_FOLDER=/mnt/uploads
       - BESACE_THUMBNAILS_FOLDER=/mnt/thumbnails
+      - SYNC_ON_START=1
     volumes:
       - ./volumes/root-folder:/mnt/uploads:rw
       - ./volumes/thumbnails:/mnt/thumbnails:rw
