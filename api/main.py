@@ -107,7 +107,7 @@ def purge_old_folders():
     folders = [
         (path.name, get_folder_metadata(path.name)["created"])
         for path in ROOT_FOLDER.iterdir()
-        if path.isdir()
+        if path.is_dir()
     ]
     print(f"{len(folders)} folders in {ROOT_FOLDER}")
     for folder, timestamp in folders:
@@ -179,7 +179,7 @@ def create_folder(
     with open(ROOT_FOLDER / f"{folder_id}.meta", "w") as f:
         json.dump(metadata, f)
 
-    print(f"Created new folder {folder_dir!r}")
+    print(f"Created new folder {folder_dir}")
     redirect_url = request.url_for("get_folder", **{"folder_id": str(folder_id)})
     return RedirectResponse(redirect_url, status_code=303)
 
@@ -188,7 +188,7 @@ def create_folder(
 def get_folder(folder_id: FolderId):
     folder_dir = ROOT_FOLDER / folder_id
     if not folder_dir.exists():
-        raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
+        raise HTTPException(status_code=404, detail=f"Unknown folder '{folder_id}'")
 
     files = [
         {
@@ -213,11 +213,11 @@ def get_folder(folder_id: FolderId):
 def get_folder_archive(folder_id: FolderId):
     folder_dir = ROOT_FOLDER / folder_id
     if not folder_dir.exists():
-        raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
+        raise HTTPException(status_code=404, detail=f"Unknown folder '{folder_id}'")
 
     filenames = [path.name for path in folder_dir.iterdir() if path.is_file()]
     folder_archive = ROOT_FOLDER / f"{folder_id}.zip"
-    print(f"Updating archive {folder_archive!r}")
+    print(f"Updating archive '{folder_archive}'")
     with zipfile.ZipFile(folder_archive, "a") as archive:
         existing = archive.namelist()
         for filename in filenames:
@@ -232,7 +232,7 @@ def get_folder_archive(folder_id: FolderId):
 def delete_folder(folder_id: FolderId, _secret: str = Security(check_api_secret)):
     folder_dir = ROOT_FOLDER / folder_id
     if not os.path.exists(folder_dir):
-        raise HTTPException(status_code=404, detail=f"Unknown folder {folder_id!r}")
+        raise HTTPException(status_code=404, detail=f"Unknown folder '{folder_id}'")
     shutil.rmtree(folder_dir)
     try:
         os.remove(ROOT_FOLDER / f"{folder_id}.zip")
@@ -249,7 +249,7 @@ def delete_folder(folder_id: FolderId, _secret: str = Security(check_api_secret)
     except FileNotFoundError:
         # Folder was created with older version.
         pass
-    print(f"Deleted folder {folder_dir!r}")
+    print(f"Deleted folder '{folder_dir}'")
     return {}
 
 

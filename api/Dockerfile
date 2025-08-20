@@ -1,48 +1,60 @@
-FROM python:3.11.5 as python-base
+# ---------- builder ----------
+FROM python:3.13-slim AS builder
 
-ENV PIP_DEFAULT_TIMEOUT=100 \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_NO_CACHE_DIR=off \
-    POETRY_HOME=/opt/poetry\
-    POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    PYSETUP_PATH="/opt/pysetup"
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-RUN python3 -m venv $POETRY_HOME && \
-    $POETRY_HOME/bin/pip install poetry && \
-    $POETRY_HOME/bin/poetry --version
+# Install only what's needed to fetch uv
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
 
-WORKDIR $PYSETUP_PATH
-COPY ./poetry.lock ./pyproject.toml ./
-RUN $POETRY_HOME/bin/poetry install --no-dev --no-root
+# Install uv (binary in /root/.local/bin)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
 
-FROM python:3.11.5-slim as production
-
-ENV PATH="/opt/pysetup/.venv/bin:$PATH" \
-    HOST=0.0.0.0 \
-    PORT=8000 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONFAULTHANDLER=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
-    VENV_PATH="/opt/pysetup/.venv"
-
-COPY --from=python-base $VENV_PATH $VENV_PATH
-
-# Set up user and group
-ARG userid=10001
-ARG groupid=10001
-RUN groupadd --gid $groupid app && \
-    useradd -g app --uid $userid --shell /usr/sbin/nologin --create-home app
-
-# Prepare uploads folder
-RUN mkdir /mnt/uploads && \
-    chown app:app /mnt/uploads
-
-USER app
 WORKDIR /app
 
+# Copy resolver inputs first for maximum cache hits
+COPY pyproject.toml ./
+COPY uv.lock ./
+
+# Create venv and sync only runtime deps (no dev, no project install)
+# Use BuildKit cache for uv (speeds up rebuilds)
+#   docker buildx build ...  (BuildKit enabled)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv venv --python 3.13 && \
+    uv sync --frozen --no-dev --no-install-project
+
+# Bring in app code last
 COPY --chown=app:app . .
 
+# ---------- runtime ----------
+FROM python:3.13-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Non-root user
+ARG userid=10001
+ARG groupid=10001
+RUN groupadd --gid "${groupid}" app && \
+    useradd -g app --uid "${userid}" --shell /usr/sbin/nologin --create-home app
+
+
+ENV HOST=0.0.0.0 \
+    PORT=8000
+
+
+# Copy only what we need from builder; keep ownership tight
+COPY --from=builder --chown=app:app /app /app
+
+# Prepare writable mounts
+RUN mkdir -p /mnt/uploads && \
+    chown -R app:app /mnt/uploads
+
+WORKDIR /app
+
+USER app
+
 EXPOSE $PORT
-CMD ["sh", "-c", "uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_URL_PATH} --proxy-headers --forwarded-allow-ips='*'"]
+CMD ["sh", "-c", ".venv/bin/uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_URL_PATH} --proxy-headers --forwarded-allow-ips='*'"]

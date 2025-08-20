@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   #
   # `tusd` offers resumable uploads.
@@ -32,7 +31,6 @@ services:
         # Same as tusd to share writable folder
         userid: 1000
         groupid: 1000
-    image: api
     # Let the init system handle signals for us.
     # among other things this helps shutdown be fast
     init: true
@@ -42,7 +40,6 @@ services:
       - BESACE_RETENTION_DAYS=7
       - BESACE_CREATE_SECRETS=${BESACE_CREATE_SECRETS:-s2cr2t,s3cr3t}
     volumes:
-      - ./api:/app:rw
       - ./volumes/root-folder:/mnt/uploads:rw
     expose:
       - "8000"
@@ -57,13 +54,11 @@ services:
     restart: unless-stopped
     build:
       context: ./thumbnailer/
-    image: thumbnailer
     init: true
     environment:
       - BESACE_ROOT_FOLDER=/mnt/uploads
       - BESACE_THUMBNAILS_FOLDER=/mnt/thumbnails
     volumes:
-      - ./thumbnailer:/app:rw
       - ./volumes/root-folder:/mnt/uploads:rw
       - ./volumes/thumbnails:/mnt/thumbnails:rw
 
