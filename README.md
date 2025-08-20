@@ -159,6 +159,13 @@ Frontend:
 ## Run locally
 
 ```
+cat > local.env <<EOF
+BESACE_CREATE_SECRETS=s2cr2t,s3cr3t
+BESACE_RETENTION_DAYS=10
+EOF
+```
+
+```
 docker compose up
 ```
 
@@ -172,7 +179,7 @@ I only share the passwords of my *Besace* instance with my family and friends, b
 As an example on my server, *Besace* is deployed with:
 
 * A `local.env` file with the creation password values `BESACE_CREATE_SECRETS=s2cr2t,s3cr3t`
-* Docker Compose that runs the *tusd* and Web API containers with `docker compose --env-file ./local.env up -d tusd api`
+* Docker Compose that runs the *tusd* and Web API containers
 * Apache as a reverse proxy (see [example conf](config/apache2.conf))
 * Apache as SSL termination with a [Let's Encrypt](https://letsencrypt.org) certificate
 

@@ -34,6 +34,8 @@ services:
     # Let the init system handle signals for us.
     # among other things this helps shutdown be fast
     init: true
+    env_file:
+      - local.env
     environment:
       - ROOT_URL_PATH=/api
       - BESACE_ROOT_FOLDER=/mnt/uploads
