@@ -5,7 +5,7 @@ import os from "os";
 /** Helpers */
 const PASSWORD = "s3cr3t";
 const UPPY_TITLE = "Drop files here or upload files";
-const ASSET_RELATIVE = "thumbnailer/assets/default.jpg"; // under $HOME
+const ASSET_RELATIVE = "../thumbnailer/assets/default.jpg";
 
 function assetPath() {
   return path.resolve(process.cwd(), ASSET_RELATIVE);

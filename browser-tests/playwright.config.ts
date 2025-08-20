@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: 'browser-tests',
+  testDir: '.',
   use: {
     baseURL: 'http://localhost:8080',
     screenshot: 'on',

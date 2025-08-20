@@ -81,11 +81,13 @@ jobs:
         node-version: 24
 
     - name: Install dependencies
+      working-directory: browser-tests
       run: |
         npm ci
         npx playwright install firefox
 
     - name: Run Playwright Tests
+      working-directory: browser-tests
       run: npx playwright test
 
     - name: Show app logs
