@@ -67,7 +67,7 @@ jobs:
 
     - name: Run application containers
       run: |
-        echo "BESACE_CREATE_SECRETS=s2cr2t,s3cr3t" > env.local
+        echo "BESACE_CREATE_SECRETS=s2cr2t,s3cr3t" > local.env
         docker compose up -d
 
     - name: Check api liveliness
