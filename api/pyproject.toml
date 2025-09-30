@@ -5,6 +5,7 @@ authors = [
 requires-python = "<4.0,>=3.11"
 dependencies = [
     "fastapi<1.0,>=0.111",
+    "filelock>=3.19.1",
     "uvicorn[standard]<1.0,>=0.29",
 ]
 name = "api"
