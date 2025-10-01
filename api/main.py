@@ -28,7 +28,7 @@ from pydantic import AfterValidator
 
 HERE = here = Path(__file__).parent
 ROOT_FOLDER = Path(os.getenv("BESACE_ROOT_FOLDER", "."))
-RETENTION_DAYS = int(os.getenv("BESACE_RETENTION_DAYS", "7"))
+RETENTION_DAYS = int(os.getenv("BESACE_RETENTION_DAYS", "10"))
 CREATE_SECRETS = os.getenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t").split(",")
 FOLDER_WORDS_MIN_LENGTH = 3
 FOLDER_WORDS_MAX_LENGTH = 6
