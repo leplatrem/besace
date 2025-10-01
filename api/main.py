@@ -36,8 +36,8 @@ FOLDER_WORDS_COUNT = 3
 BESACE_FOLDER_PATTERN = re.compile(
     f"^([a-zA-Z]+-){{{FOLDER_WORDS_COUNT - 1}}}[a-zA-Z]+$"
 )
-LOG_SECRET_REVEAL_LENGTH = int(os.getenv("LOG_SECRET_REVEAL_LENGTH", "3"))
-INVALID_SECRET_WAIT_SECONDS = int(os.getenv("INVALID_SECRET_WAIT_SECONDS", "2"))
+LOG_SECRET_REVEAL_LENGTH = int(os.getenv("BESACE_LOG_SECRET_REVEAL_LENGTH", "3"))
+INVALID_SECRET_WAIT_SECONDS = int(os.getenv("BESACE_INVALID_SECRET_WAIT_SECONDS", "2"))
 
 
 api_secret_header = APIKeyHeader(name="Authorization")
