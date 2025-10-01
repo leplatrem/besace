@@ -29,7 +29,7 @@ from pydantic import AfterValidator
 
 HERE = here = Path(__file__).parent
 ROOT_FOLDER = Path(os.getenv("BESACE_ROOT_FOLDER", "."))
-RETENTION_DAYS = int(os.getenv("BESACE_RETENTION_DAYS", "7"))
+RETENTION_DAYS = int(os.getenv("BESACE_RETENTION_DAYS", "10"))
 CREATE_SECRETS = os.getenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t").split(",")
 FOLDER_WORDS_MIN_LENGTH = 3
 FOLDER_WORDS_MAX_LENGTH = 6
@@ -37,9 +37,10 @@ FOLDER_WORDS_COUNT = 3
 BESACE_FOLDER_PATTERN = re.compile(
     f"^([a-zA-Z]+-){{{FOLDER_WORDS_COUNT - 1}}}[a-zA-Z]+$"
 )
-LOG_SECRET_REVEAL_LENGTH = int(os.getenv("LOG_SECRET_REVEAL_LENGTH", "3"))
-INVALID_SECRET_WAIT_SECONDS = int(os.getenv("INVALID_SECRET_WAIT_SECONDS", "2"))
+LOG_SECRET_REVEAL_LENGTH = int(os.getenv("BESACE_LOG_SECRET_REVEAL_LENGTH", "3"))
+INVALID_SECRET_WAIT_SECONDS = int(os.getenv("BESACE_INVALID_SECRET_WAIT_SECONDS", "2"))
 LOCK_TIMEOUT_SECONDS = int(os.getenv("BESACE_LOCK_TIMEOUT_SECONDS", "60"))
+
 
 api_secret_header = APIKeyHeader(name="Authorization")
 

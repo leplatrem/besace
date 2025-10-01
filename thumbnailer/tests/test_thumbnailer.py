@@ -16,6 +16,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
+
 class DummyEvent:
     def __init__(self, src_path: str, is_directory: bool):
         self.src_path = src_path
@@ -31,6 +32,7 @@ class DummyVideoFileClip:
     def get_frame(self, t):
         # Return a tiny RGB **NumPy array** as a frame (what Image.fromarray expects)
         return np.asarray(Image.new("RGB", (16, 9), color=(10, 20, 30)))
+
 
 class DummyPix:
     def __init__(self, w=20, h=30):
@@ -96,10 +98,13 @@ def module(tmp_path, monkeypatch, stub_deps):
     # Ensure Python finds the module under test next to the tests
     # Replace 'thumbnailer' with your actual module filename (no .py)
     import thumbnailer  # noqa: F401
+
     importlib.reload(thumbnailer)
 
     # Point asset constants to temp ones
-    monkeypatch.setattr(thumbnailer, "DEFAULT_THUMBNAIL", str(default_img), raising=True)
+    monkeypatch.setattr(
+        thumbnailer, "DEFAULT_THUMBNAIL", str(default_img), raising=True
+    )
     monkeypatch.setattr(thumbnailer, "FONT_FILE", str(dummy_font), raising=True)
 
     # Make file-complete wait loops instant
@@ -107,13 +112,26 @@ def module(tmp_path, monkeypatch, stub_deps):
 
     # Avoid truetype dependency on a real font file
     import PIL.ImageFont as IF
+
     # Always use a safe bitmap font in tests
-    monkeypatch.setattr(thumbnailer.ImageFont, "truetype", lambda *_a, **_k: IF.load_default(), raising=True)
+    monkeypatch.setattr(
+        thumbnailer.ImageFont,
+        "truetype",
+        lambda *_a, **_k: IF.load_default(),
+        raising=True,
+    )
+
     # No-op the text overlay to avoid platform font/freetype recursion issues
     class _NoopDraw:
-        def __init__(self, _img): pass
-        def text(self, *args, **kwargs): pass
-    monkeypatch.setattr(thumbnailer.ImageDraw, "Draw", lambda img: _NoopDraw(img), raising=True)
+        def __init__(self, _img):
+            pass
+
+        def text(self, *args, **kwargs):
+            pass
+
+    monkeypatch.setattr(
+        thumbnailer.ImageDraw, "Draw", lambda img: _NoopDraw(img), raising=True
+    )
 
     return thumbnailer
 
@@ -281,7 +299,9 @@ def test_watch_handler_on_deleted_removes_thumbnail_folder(module, io_dirs):
     assert not thumb_folder.exists()
 
 
-def test_main_runs_sync_on_start_and_exits_cleanly(module, tmp_path, monkeypatch, capsys):
+def test_main_runs_sync_on_start_and_exits_cleanly(
+    module, tmp_path, monkeypatch, capsys
+):
     # Prepare input tree with a matching folder and a file
     src = tmp_path / "in"
     out = tmp_path / "thumbs"
