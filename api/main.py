@@ -12,6 +12,7 @@ import zipfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
+from filelock import FileLock, Timeout as LockTimeout
 
 from fastapi import (
     Depends,
@@ -38,6 +39,7 @@ BESACE_FOLDER_PATTERN = re.compile(
 )
 LOG_SECRET_REVEAL_LENGTH = int(os.getenv("BESACE_LOG_SECRET_REVEAL_LENGTH", "3"))
 INVALID_SECRET_WAIT_SECONDS = int(os.getenv("BESACE_INVALID_SECRET_WAIT_SECONDS", "2"))
+LOCK_TIMEOUT_SECONDS = int(os.getenv("BESACE_LOCK_TIMEOUT_SECONDS", "60"))
 
 
 api_secret_header = APIKeyHeader(name="Authorization")
@@ -217,12 +219,22 @@ def get_folder_archive(folder_id: FolderId):
 
     filenames = [path.name for path in folder_dir.iterdir() if path.is_file()]
     folder_archive = ROOT_FOLDER / f"{folder_id}.zip"
-    print(f"Updating archive '{folder_archive}'")
-    with zipfile.ZipFile(folder_archive, "a") as archive:
-        existing = archive.namelist()
-        for filename in filenames:
-            if filename not in existing:
-                archive.write(folder_dir / filename, filename)
+    lockfile = ROOT_FOLDER / f"{folder_id}.zip.lock"
+
+    # Acquire a lock on disk (works across containers if they share a volume)
+    lock = FileLock(lockfile)
+    try:
+        with lock.acquire(timeout=LOCK_TIMEOUT_SECONDS):
+            print(f"Updating archive '{folder_archive}'")
+            with zipfile.ZipFile(folder_archive, "a") as archive:
+                existing = archive.namelist()
+                for filename in filenames:
+                    if filename not in existing:
+                        archive.write(folder_dir / filename, filename)
+    except LockTimeout:
+        raise HTTPException(
+            status_code=503, detail="Could not acquire lock to update archive"
+        )
 
     headers = {"Content-Disposition": f'attachment; filename="{folder_id}.zip"'}
     return FileResponse(folder_archive, headers=headers)
