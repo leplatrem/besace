@@ -62,9 +62,9 @@ jobs:
           push: true
           build-args: COMMANDS_CACHE_BUST=${{ steps.vars.outputs.sha_short }}
           tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/collect-${{ matrix.service }}:latest
-            ${{ vars.DOCKERHUB_USERNAME }}/collect-${{ matrix.service }}:${{ steps.vars.outputs.sha_short }}
-            ${{ github.ref_type == 'tag' && format('{0}/collect-{1}:{2}', vars.DOCKERHUB_USERNAME, matrix.service, steps.vars.outputs.ref_tag) || '' }}
+            ${{ vars.DOCKERHUB_USERNAME }}/besace-${{ matrix.service }}:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/besace-${{ matrix.service }}:${{ steps.vars.outputs.sha_short }}
+            ${{ github.ref_type == 'tag' && format('{0}/besace-{1}:{2}', vars.DOCKERHUB_USERNAME, matrix.service, steps.vars.outputs.ref_tag) || '' }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
