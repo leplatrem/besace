@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: publish
 
+    strategy:
+      matrix:
+        service:
+          - api
+          - thumbnailer
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -26,9 +32,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ matrix.service }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-${{ matrix.service }}-
 
       - name: Set up variables
         id: vars
@@ -52,13 +58,13 @@ jobs:
       - name: Build and push Docker image to Docker Hub
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ${{ matrix.service }}/
           push: true
           build-args: COMMANDS_CACHE_BUST=${{ steps.vars.outputs.sha_short }}
           tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/collect:latest
-            ${{ vars.DOCKERHUB_USERNAME }}/collect:${{ steps.vars.outputs.sha_short }}
-            ${{ github.ref_type == 'tag' && format('{0}/collect:{1}', vars.DOCKERHUB_USERNAME, steps.vars.outputs.ref_tag) || '' }}
+            ${{ vars.DOCKERHUB_USERNAME }}/collect-${{ matrix.service }}:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/collect-${{ matrix.service }}:${{ steps.vars.outputs.sha_short }}
+            ${{ github.ref_type == 'tag' && format('{0}/collect-{1}:{2}', vars.DOCKERHUB_USERNAME, matrix.service, steps.vars.outputs.ref_tag) || '' }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
