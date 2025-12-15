@@ -97,7 +97,7 @@ jobs:
       run: docker compose logs -n 1000 api || true
 
     - name: Upload Playwright test artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: playwright-artifacts
         path: test-results/
