@@ -68,10 +68,8 @@ def stub_deps(monkeypatch):
 
     # moviepy.editor.VideoFileClip
     moviepy = types.ModuleType("moviepy")
-    editor = types.ModuleType("moviepy.editor")
-    editor.VideoFileClip = DummyVideoFileClip
+    moviepy.VideoFileClip = DummyVideoFileClip
     sys.modules["moviepy"] = moviepy
-    sys.modules["moviepy.editor"] = editor
 
     # fitz (PyMuPDF)
     fitz = types.ModuleType("fitz")
