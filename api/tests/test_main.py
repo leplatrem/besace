@@ -38,6 +38,9 @@ def app_env(monkeypatch, tmp_path):
     # Ensure deterministic dictionary and folder name lengths
     monkeypatch.setenv("BESACE_CREATE_SECRETS", "s2cr2t,s3cr3t")
 
+    # No wait in bad auth
+    monkeypatch.setenv("BESACE_INVALID_SECRET_WAIT_SECONDS", "0")
+
     # Import *after* env is set:
     import main  # noqa: F401
 
@@ -77,7 +80,7 @@ def test_root_endpoint(client):
 def test_auth_missing_is_403(client):
     # Missing header is handled by APIKeyHeader itself
     res = client.post("/folder")
-    assert res.status_code == 403
+    assert res.status_code == 401
     assert res.json()["detail"] in ("Not authenticated", "Forbidden")
 
 
