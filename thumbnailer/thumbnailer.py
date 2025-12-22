@@ -5,7 +5,7 @@ import shutil
 import time
 
 from PIL import Image, ImageFont, ImageDraw
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 from pillow_heif import register_heif_opener
 import fitz  # PyMuPDF
 from watchdog.observers import Observer
