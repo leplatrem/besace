@@ -106,6 +106,9 @@ test("can see thumbnails", async ({ page, context }) => {
   // Open preview view
   await page.click("#preview");
 
+  // Wait for any lazy loaded images to finish.
+  await page.waitForLoadState("networkidle");
+
   // Check that there are no broken images in the gallery
   await page.waitForSelector(".gallery img");
   const brokenCount = await page.$$eval(
