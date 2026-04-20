@@ -4,8 +4,8 @@ authors = [
 ]
 requires-python = "<4.0,>=3.11"
 dependencies = [
-    "fastapi<1.0,>=0.111",
-    "filelock>=3.19.1",
+    "fastapi>=0.136.0,<1.0",
+    "filelock>=3.29.0",
     "uvicorn[standard]>=0.44.0,<1.0",
 ]
 name = "api"
@@ -18,5 +18,5 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=9.0.3",
     "pytest-coverage>=0.0",
-    "ruff>=0.15.10",
+    "ruff>=0.15.11",
 ]
