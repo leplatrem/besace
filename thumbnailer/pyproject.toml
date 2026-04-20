@@ -22,5 +22,5 @@ dev = [
     "numpy>=2.3.2",
     "pytest>=9.0.3",
     "pytest-coverage>=0.0",
-    "ruff>=0.15.10",
+    "ruff>=0.15.11",
 ]
