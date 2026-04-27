@@ -6,7 +6,7 @@ requires-python = "<4.0,>=3.11"
 dependencies = [
     "fastapi>=0.136.0,<1.0",
     "filelock>=3.29.0",
-    "uvicorn[standard]>=0.44.0,<1.0",
+    "uvicorn[standard]>=0.46.0,<1.0",
 ]
 name = "api"
 version = "0.1.0"
