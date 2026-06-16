@@ -150,12 +150,11 @@ body {
   }
 
 .gallery {
-  column-count: 6;
+  column-count: 3;
   --gallery-gap: 15px;
 }
 @media (max-width: 540px) {
   .gallery {
-    column-count: 3;
     --gallery-gap: 8px;
   }
 }
@@ -178,7 +177,7 @@ body {
   .gallery .thumbnail img {
     width: 100%;
     height: auto;
-    max-height: 128px;
+    max-height: 256px;
     display: block;
     object-fit: contain;
   }

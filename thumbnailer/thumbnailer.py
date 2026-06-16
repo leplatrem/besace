@@ -102,10 +102,10 @@ def parse_arguments():
     parser.add_argument("input", type=str, help="Path to the input folder")
     parser.add_argument("output", type=str, help="Path to the thumbnails folder")
     parser.add_argument(
-        "--width", type=int, default=128, help="Width of the thumbnails"
+        "--width", type=int, default=256, help="Width of the thumbnails"
     )
     parser.add_argument(
-        "--height", type=int, default=128, help="Height of the thumbnails"
+        "--height", type=int, default=256, help="Height of the thumbnails"
     )
     parser.add_argument(
         "--frame-time",
