@@ -23,19 +23,23 @@ rename_if_exists() {
 
 eventPayload=$(cat /dev/stdin | jq .)
 folder_id=$(echo $eventPayload | jq -r .Event.Upload.MetaData.folderId)
+source=$(echo $eventPayload | jq -r .Event.Upload.Storage.Path)
 
-if [[ "${folder_id}" == *\/* ]]; then
-    echo "Invalid folder ${folder_id}" >&2
-    echo "{\"detail\": \"Invalid folder '${folder_id}'\"}"
+# Same pattern as the API (eg. `ossa-teneas-doctum`). Rejects empty, `.`, `..`, etc.
+if ! [[ "${folder_id}" =~ ^[a-zA-Z]+-[a-zA-Z]+-[a-zA-Z]+$ ]] || [ ! -d "${BESACE_ROOT_FOLDER}/${folder_id}" ]; then
+    echo "Invalid folder" >&2
+    rm -f "${source}" "${source}.info"
+    echo '{"detail": "Invalid folder"}'
     exit 1
 fi
 
-source=$(echo $eventPayload | jq -r .Event.Upload.Storage.Path)
 filename=$(echo $eventPayload | jq -r  .Event.Upload.MetaData.filename)
 
-if [[ "${filename}" == *\/* ]]; then
-    echo "Invalid filename ${filename}" >&2
-    echo "{\"detail\": \"Invalid filename '${filename}'\"}"
+# No path separator, no leading dot, no quote/brackets or control characters.
+if [ -z "${filename}" ] || printf '%s' "${filename}" | grep -Eq '^\.|[/\\<>"]|[[:cntrl:]]'; then
+    echo "Invalid filename" >&2
+    rm -f "${source}" "${source}.info"
+    echo '{"detail": "Invalid filename"}'
     exit 1
 fi
 

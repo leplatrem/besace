@@ -102,29 +102,52 @@ window.addEventListener("load", async (e) => {
       }
     }
 
-    let content = `<h3>List of ${details.files.length} file${
-      details.files.length > 1 ? "s" : ""
-    }</h3>`;
+    // Filenames are chosen by uploaders: never inject them as HTML.
+    const el = (tag, attrs = {}, ...children) => {
+      const elt = document.createElement(tag);
+      Object.assign(elt, attrs);
+      elt.append(...children);
+      return elt;
+    };
+    const folderPath = encodeURIComponent(details.folder);
+
+    const content = el(
+      "div",
+      {},
+      el("h3", {
+        textContent: `List of ${details.files.length} file${
+          details.files.length > 1 ? "s" : ""
+        }`,
+      }),
+    );
     for (const timestamp of groups.keys()) {
       const day = new Date(timestamp * 1000).toLocaleString();
-      content += `
-      <p>Uploaded on ${day}</p>
-      <div class="gallery">`;
+      const gallery = el("div", { className: "gallery" });
       for (const file of groups.get(timestamp)) {
-        content += `
-        <div class="thumbnail">
-          <a href="/api/file/${details.folder}/${file.filename}">
-            <img src="/thumbnails/${details.folder}/${file.filename}.jpg"
-             loading="lazy"
-             style="min-height: 90px"/>
-          </a>
-          <div class="info">
-            <p class="filename">${file.filename}</p>
-            <p class="filesize">(${humanFileSize(file.size)})</p>
-          </div>
-        </div>`;
+        const filePath = encodeURIComponent(file.filename);
+        const img = el("img", {
+          src: `/thumbnails/${folderPath}/${filePath}.jpg`,
+          loading: "lazy",
+        });
+        img.style.minHeight = "90px";
+        gallery.append(
+          el(
+            "div",
+            { className: "thumbnail" },
+            el("a", { href: `/api/file/${folderPath}/${filePath}` }, img),
+            el(
+              "div",
+              { className: "info" },
+              el("p", { className: "filename", textContent: file.filename }),
+              el("p", {
+                className: "filesize",
+                textContent: `(${humanFileSize(file.size)})`,
+              }),
+            ),
+          ),
+        );
       }
-      content += "</div>";
+      content.append(el("p", { textContent: `Uploaded on ${day}` }), gallery);
     }
     const modal = new tingle.modal();
     modal.setContent(content);
