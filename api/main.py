@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import functools
+import hmac
 import json
 import os
 import random
@@ -51,8 +52,10 @@ async def check_api_secret(
     try:
         _type, secret = api_key_header.split(" ", 1)
     except ValueError:
-        secret = None
-    if secret in CREATE_SECRETS:
+        secret = ""
+    # Constant time comparison, and always compare against all secrets.
+    matches = [hmac.compare_digest(secret.encode(), s.encode()) for s in CREATE_SECRETS]
+    if any(matches):
         print(f"Using secret '{secret[:LOG_SECRET_REVEAL_LENGTH]}..'")
         return secret
     # Let's slow down retries here...
