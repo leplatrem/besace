@@ -207,8 +207,9 @@ def get_folder(folder_id: FolderId):
         for path in folder_dir.iterdir()
         if path.is_file()
     ]
+    # Do not expose the rest of the metadata (creator IP, user-agent, secret).
     return {
-        **get_folder_metadata(folder_id),
+        "created": get_folder_metadata(folder_id)["created"],
         "folder": folder_id,
         "files": sorted(files, key=lambda v: v["modified"], reverse=True),
         "settings": {

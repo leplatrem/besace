@@ -248,6 +248,18 @@ def test_unauthorized_delete_is_401(client):
     assert res.json()["detail"] == "Invalid or missing API Secret"
 
 
+def test_get_folder_does_not_leak_creator_metadata(client, auth_header):
+    res = client.post("/folder", headers={"User-Agent": "secret-agent", **auth_header})
+    folder_id = res.headers["location"].rsplit("/", 1)[-1]
+
+    body = client.get(f"/folder/{folder_id}").json()
+
+    assert "host" not in body
+    assert "user-agent" not in body
+    assert "secret" not in body
+    assert "s2c" not in json.dumps(body)
+
+
 def test_invalid_secret_attempts_are_serialized(app_env, monkeypatch):
     import asyncio
 
