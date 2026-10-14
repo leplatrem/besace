@@ -246,3 +246,23 @@ def test_unauthorized_delete_is_401(client):
     )
     assert res.status_code == 401
     assert res.json()["detail"] == "Invalid or missing API Secret"
+
+
+def test_invalid_secret_attempts_are_serialized(app_env, monkeypatch):
+    import asyncio
+
+    monkeypatch.setattr(app_env, "INVALID_SECRET_WAIT_SECONDS", 0.1)
+
+    async def attempt():
+        try:
+            await app_env.check_api_secret("Bearer WRONG")
+        except app_env.HTTPException:
+            pass
+
+    async def run_parallel():
+        await asyncio.gather(*(attempt() for _ in range(5)))
+
+    start = time.monotonic()
+    asyncio.run(run_parallel())
+    # Parallel attempts do not bypass the wait.
+    assert time.monotonic() - start >= 0.5

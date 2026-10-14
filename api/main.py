@@ -44,6 +44,8 @@ LOCK_TIMEOUT_SECONDS = int(os.getenv("BESACE_LOCK_TIMEOUT_SECONDS", "60"))
 
 
 api_secret_header = APIKeyHeader(name="Authorization")
+# Serializes failed attempts, so that parallel requests can't bypass the wait.
+invalid_secret_lock = asyncio.Lock()
 
 
 async def check_api_secret(
@@ -58,8 +60,9 @@ async def check_api_secret(
     if any(matches):
         print(f"Using secret '{secret[:LOG_SECRET_REVEAL_LENGTH]}..'")
         return secret
-    # Let's slow down retries here...
-    await asyncio.sleep(INVALID_SECRET_WAIT_SECONDS)
+    # Let's slow down retries here, one failed attempt at a time...
+    async with invalid_secret_lock:
+        await asyncio.sleep(INVALID_SECRET_WAIT_SECONDS)
     raise HTTPException(
         status_code=401,
         detail="Invalid or missing API Secret",
